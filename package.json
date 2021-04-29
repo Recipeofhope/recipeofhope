@@ -12,13 +12,16 @@
   },
   "main": "index.js",
   "dependencies": {
+    "@tailwindcss/postcss7-compat": "^2.0.2",
+    "autoprefixer": "^9",
     "bookshelf": "^1.2.0",
     "core-js": "^3.6.5",
     "express": "^4.17.1",
     "knex": "^0.95.4",
     "morgan": "^1.10.0",
     "pg": "^8.6.0",
-    "tailwindcss": "^2.1.2",
+    "postcss": "^7",
+    "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "vue": "^2.6.11"
   },
   "devDependencies": {
@@ -28,6 +31,7 @@
     "babel-eslint": "^10.1.0",
     "eslint": "^6.7.2",
     "eslint-plugin-vue": "^6.2.2",
+    "vue-cli-plugin-tailwind": "~2.0.6",
     "vue-template-compiler": "^2.6.11"
   },
   "eslintConfig": {

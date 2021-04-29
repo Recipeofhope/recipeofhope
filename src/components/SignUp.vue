@@ -2,7 +2,7 @@
   <section class="text-gray-600 body-font bg-secondary">
     <div class="container px-5 py-24 mx-auto flex flex-wrap items-center">
       <div class="lg:w-3/5 md:w-1/2 md:pr-16 lg:pr-0 pr-0">
-      <h1 class="title-font font-medium text-3xl text-primary">Healthy and Hearty Lunches Delivered to Your Doorstop.</h1>
+      <h1 class="title-font font-medium text-3xl text-primary">Healthy and Hearty Lunches Delivered to Your Doorstep.</h1>
       <p class="leading-relaxed mt-4 text-primary">Spreading Hope, One Meal at a Time.</p>
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">

@@ -1,4 +1,5 @@
-const colors = require('./tailwind/colors');
+const colors = require('tailwindcss/colors')
+const customColors = require('./tailwind/colors')
 
 module.exports = {
   purge: { content: ['./public/**/*.html', './src/**/*.vue'] },
@@ -6,8 +7,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: colors.primary,
-        secondary: colors.secondary
+        primary: customColors.primary,
+        secondary: customColors.secondary
+      },
+      fontFamily: {
+        'sans': ['Helvetica Neue']
       }
     },
   },

@@ -1,31 +1,22 @@
 <template>
-  <div id="app" class="divide-y">
-    <!-- <img alt="Vue logo" src="./assets/logo.png"> -->
-    <!-- <HelloWorld msg="Welcome to Your Vue.js App"/> -->
+  <div id="app">
     <Header />
-    <SignUp />
-    <Team />
-    <Counter />
+    <!-- <div id="nav">
+      <router-link to="/">Home</router-link> |
+      <router-link to="/about">About</router-link>
+    </div> -->
+    <router-view/>
     <Footer />
   </div>
 </template>
-
 <script>
-// import HelloWorld from './components/HelloWorld.vue'
-import Header from './components/Header.vue'
-import SignUp from './components/SignUp.vue'
-import Team from './components/Team.vue'
-import Counter from './components/Counter.vue'
-import Footer from './components/Footer.vue'
+import Header from '@/components/Header.vue'
+import Footer from '@/components/Footer.vue'
 
 export default {
-  name: 'App',
   components: {
     Header,
-    SignUp,
-    Team,
-    Counter,
     Footer
-  }
+  }  
 }
 </script>

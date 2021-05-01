@@ -1,6 +1,5 @@
 <template>
   <section class="text-gray-600 body-font">
-    <img class="logo" src="@/assets/Something.png" alt="Recipe Of Hope" srcset="" />
     <div class="container px-5 py-24 mx-auto flex flex-wrap">
       <div class="flex flex-col text-center w-full mb-20">
         <h1 class="sm:text-4xl text-3xl font-extrabold title-font mb-4 text-gray-900">How It Works</h1>

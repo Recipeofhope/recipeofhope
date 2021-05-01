@@ -1,9 +1,9 @@
 <template>
-  <section class="text-gray-600 body-font bg-secondary">
+  <section class="text-gray-600 body-font bg-primary">
     <div class="container px-5 py-24 mx-auto flex flex-wrap items-center">
       <div class="lg:w-3/5 md:w-1/2 md:pr-16 lg:pr-0 pr-0">
-      <h1 class="title-font font-medium text-3xl text-primary">Healthy and Hearty Lunches Delivered to Your Doorstep.</h1>
-      <p class="leading-relaxed mt-4 text-primary">Spreading Hope, One Meal at a Time.</p>
+      <h1 class="title-font font-medium text-3xl text-secondary">Healthy and Hearty Lunches Delivered to Your Doorstep.</h1>
+      <p class="leading-relaxed mt-4 text-secondary">Spreading Hope, One Meal at a Time.</p>
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Sign Up</h2>
@@ -20,7 +20,7 @@
             <div class="mt-4 space-y-4">
               <div class="relative flex items-start">
                 <div class="flex items-center h-5">
-                  <input id="ascook" name="ascook" type="checkbox" class="focus:ring-primary h-4 w-4 text-primary border-primary rounded">
+                  <input id="ascook" name="ascook" type="checkbox" class="focus:ring-primary h-4 w-4 text-secondary border-primary rounded">
                 </div>
                 <div class="ml-3 text-sm">
                   <label for="ascook" class="font-medium text-primary">I'm a volunteer cook</label>
@@ -29,14 +29,10 @@
             </div>
           </fieldset>
         </div>
-        <button class="text-white bg-primary border-0 py-2 px-8 focus:outline-none hover:bg-green-600 rounded text-lg mt-10">Sign Up</button>
+        <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-green-600 rounded text-lg mt-10">Sign Up</button>
         <!-- <p class="text-xs text-gray-500 mt-3">Sign up as a cook or a patient.</p> -->
       </div>
     </div>
   </section>
 </template>
 <script>
-export default {
-  
-}
-</script>

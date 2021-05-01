@@ -1,4 +1,4 @@
-const colors = require('tailwindcss/colors')
+// const colors = require('tailwindcss/colors')
 const customColors = require('./tailwind/colors')
 
 module.exports = {
@@ -7,8 +7,7 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        primary: customColors.primary,
-        secondary: customColors.secondary
+        ...customColors
       },
       fontFamily: {
         'sans': ['Helvetica Neue']

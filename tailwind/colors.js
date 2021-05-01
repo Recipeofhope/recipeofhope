@@ -1,4 +1,5 @@
 module.exports = {
-  secondary: '#9fcfa7',
-  primary: '#385e7f'
+  primary: '#355c7d',
+  secondary: '#a1d0a8',
+  button: '#e94f2d',
 }

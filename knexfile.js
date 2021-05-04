@@ -1,7 +1,7 @@
 module.exports = {
   development: {
     client: 'pg',
-    connection: 'postgresql://roh:recipes-of-hope@localhost:5432/recipesofhope',
+    connection: process.env.DATABASE_URL,
     migrations: {
       directory: './data/migrations',
     },
@@ -10,7 +10,7 @@ module.exports = {
 
   testing: {
     client: 'pg',
-    connection: process.env.DB_URL,
+    connection: process.env.DATABASE_URL,
     migrations: {
       directory: './data/migrations',
     },
@@ -19,7 +19,10 @@ module.exports = {
 
   production: {
     client: 'pg',
-    connection: process.env.DB_URL,
+    connection: {
+      connectionString: process.env.DATABASE_URL,
+      ssl: { rejectUnauthorized: false },
+    },
     migrations: {
       directory: './data/migrations',
     },

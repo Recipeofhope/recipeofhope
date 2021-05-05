@@ -14,10 +14,13 @@ exports.up = function(knex, Promise) {
       table
         .enu('user_type', ['Cook', 'Patient', 'Admin', 'Volunteer'])
         .notNullable()
-        .defaultTo('Patient'); // TODO: See if this is needed. I've put this since user type is not nullable
+        .defaultTo('Patient');
     })
     .createTableIfNotExists('locality', function(table) {
-      table.uuid('id').notNullable();
+      table
+        .uuid('id')
+        .primary()
+        .notNullable();
       table.string('name', 50).notNullable();
     })
     .createTableIfNotExists('address', function(table) {
@@ -69,12 +72,15 @@ exports.up = function(knex, Promise) {
         .inTable('address')
         .onDelete('CASCADE');
       table.boolean('ready').nullable();
-      table.integer('quantity').notNullable();
       table.date('scheduled_for').notNullable();
       table.boolean('cancelled').nullable();
       table.boolean('delivered').nullable();
     })
     .createTableIfNotExists('service_areas', function(table) {
+      table
+        .uuid('id')
+        .primary()
+        .notNullable();
       table
         .uuid('locality_id')
         .notNullable()

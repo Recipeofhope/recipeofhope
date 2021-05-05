@@ -29,12 +29,14 @@ exports.up = function(knex, Promise) {
         .uuid('locality_id')
         .notNullable()
         .references('id')
-        .inTable('locality');
+        .inTable('locality')
+        .onDelete('CASCADE');
       table
         .uuid('user_id')
         .notNullable()
         .references('id')
-        .inTable('user');
+        .inTable('user')
+        .onDelete('CASCADE');
       table.string('first_line', 255).notNullable();
       table.string('second_line', 255).nullable();
       table.string('building_name', 50).notNullable();
@@ -52,17 +54,20 @@ exports.up = function(knex, Promise) {
         .uuid('cook_id')
         .nullable()
         .references('id')
-        .inTable('user');
+        .inTable('user')
+        .onDelete('CASCADE');
       table
         .uuid('patient_id')
         .notNullable()
         .references('id')
-        .inTable('user');
+        .inTable('user')
+        .onDelete('CASCADE');
       table
         .uuid('address_id')
         .nullable()
         .references('id')
-        .inTable('address');
+        .inTable('address')
+        .onDelete('CASCADE');
       table.boolean('ready').nullable();
       table.integer('quantity').notNullable();
       table.date('scheduled_for').notNullable();
@@ -74,12 +79,14 @@ exports.up = function(knex, Promise) {
         .uuid('locality_id')
         .notNullable()
         .references('id')
-        .inTable('locality');
+        .inTable('locality')
+        .onDelete('CASCADE');
       table
         .uuid('service_area_id')
         .notNullable()
         .references('id')
-        .inTable('locality');
+        .inTable('locality')
+        .onDelete('CASCADE');
     });
 };
 

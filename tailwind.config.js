@@ -7,15 +7,15 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        ...customColors
+        ...customColors,
       },
       fontFamily: {
-        'sans': ['Helvetica Neue']
-      }
+        sans: ['Helvetica Neue'],
+      },
     },
   },
   variants: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require('@tailwindcss/forms')],
 }

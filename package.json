@@ -8,7 +8,7 @@
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
     "lint": "vue-cli-service lint",
-    "start": "node server.js",
+    "start": "knex migrate:latest && node server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "main": "index.js",
@@ -16,7 +16,6 @@
     "@tailwindcss/forms": "^0.3.2",
     "@tailwindcss/postcss7-compat": "^2.0.2",
     "autoprefixer": "^9",
-    "bookshelf": "^1.2.0",
     "core-js": "^3.6.5",
     "express": "^4.17.1",
     "knex": "^0.95.4",

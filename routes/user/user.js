@@ -18,10 +18,10 @@ module.exports = {
       const [id] = await knex('user')
         .returning('id')
         .insert(user);
-      res.send({ id: id });
+      res.json({ id: id });
     } catch (error) {
       res.status(400);
-      res.send({ message: error });
+      res.json({ message: error });
     }
   },
 };

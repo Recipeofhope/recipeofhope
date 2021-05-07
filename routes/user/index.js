@@ -1,11 +1,9 @@
+const { createUser } = require('./user');
+
 var router = require('express').Router();
 
 router.get('/:id', function(req, res) {
   console.log('reached get user/:id with id: ' + req.params.id);
-});
-
-router.post('/:id', function(req, res) {
-  console.log('reached post user/:id with id: ' + req.params.id);
 });
 
 router.put('/:id', function(req, res) {
@@ -14,6 +12,11 @@ router.put('/:id', function(req, res) {
 
 router.delete('/:id', function(req, res) {
   console.log('reached delete user/:id with id: ' + req.params.id);
+});
+
+// Create a user.
+router.post('/', async function(req, res) {
+  return createUser(req.body, res);
 });
 
 module.exports = router;

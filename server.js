@@ -5,6 +5,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.static('dist'));
 
+app.use(express.json());
 app.use('/user', require('./routes/user'));
 app.use('/cook', require('./routes/cook'));
 app.use('/patient', require('./routes/patient'));

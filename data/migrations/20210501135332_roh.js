@@ -9,7 +9,7 @@ exports.up = function(knex, Promise) {
       table.string('last_name', 50).notNullable();
       table.string('username', 50).notNullable();
       table.boolean('approved').notNullable();
-      table.string('password', 50).notNullable();
+      table.binary('password', 60).notNullable();
       table.string('phone_number', 10).notNullable();
       table
         .enu('user_type', ['Cook', 'Patient', 'Admin', 'Volunteer'])

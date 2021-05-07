@@ -24,6 +24,8 @@
     "morgan": "^1.10.0",
     "pg": "^8.6.0",
     "postcss": "^7",
+    "swagger-jsdoc": "^6.1.0",
+    "swagger-ui-express": "^4.1.6",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
     "uuid": "^3.4.0",
     "vue": "^2.6.11",

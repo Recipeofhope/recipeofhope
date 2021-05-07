@@ -20,8 +20,17 @@ module.exports = {
         .insert(user);
       res.json({ id: id });
     } catch (error) {
-      res.status(400);
-      res.json({ message: error });
+      if (error.constraint && error.constraint === 'user_username_unique') {
+        res.status(400).json({
+          message:
+            'Username ' +
+            "'" +
+            user.username +
+            "' already exists. Please choose another username.",
+        });
+      } else {
+        res.status(400).json({ message: error });
+      }
     }
   },
 };

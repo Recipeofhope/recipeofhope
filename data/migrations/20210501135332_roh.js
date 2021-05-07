@@ -7,7 +7,10 @@ exports.up = function(knex, Promise) {
         .notNullable();
       table.string('first_name', 50).notNullable();
       table.string('last_name', 50).notNullable();
-      table.string('username', 50).notNullable();
+      table
+        .string('username', 50)
+        .unique()
+        .notNullable();
       table.boolean('approved').notNullable();
       table.binary('password', 60).notNullable();
       table.string('phone_number', 10).notNullable();

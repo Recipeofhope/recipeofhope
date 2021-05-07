@@ -3,6 +3,7 @@ const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 
 module.exports = {
+  login: async function(user, res) {},
   createUser: async function(user, res) {
     try {
       if (!user) {
@@ -18,7 +19,7 @@ module.exports = {
       const [id] = await knex('user')
         .returning('id')
         .insert(user);
-      res.json({ id: id });
+      res.status(201).json({ id: id });
     } catch (error) {
       if (error.constraint && error.constraint === 'user_username_unique') {
         res.status(400).json({

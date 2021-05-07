@@ -1,9 +1,44 @@
 const knex = require('../../data/db');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
+const jwt = require('jsonwebtoken');
 
 module.exports = {
-  login: async function(user, res) {},
+  loginUser: async function(user, res) {
+    try {
+      if (!user) {
+        throw new Error('Please enter user details.');
+      }
+      if (!user.username) {
+        throw new Error('Please enter username.');
+      }
+      const dbUser = await knex('user')
+        .where({ username: user.username })
+        .first();
+      if (!dbUser) {
+        throw new Error(
+          'User with username ' + "'" + user.username + "' not found."
+        );
+      }
+      const match = await bcrypt.compare(
+        user.password,
+        dbUser.password.toString()
+      );
+      if (match) {
+        const accessToken = jwt.sign(dbUser, process.env.TOKEN_SECRET, {
+          expiresIn: '15m',
+        });
+        const refreshToken = jwt.sign(dbUser, process.env.TOKEN_SECRET, {
+          expiresIn: '7 days',
+        });
+        res.json({ accessToken: accessToken, refreshToken: refreshToken });
+      } else {
+        res.status(400).json({ message: 'Invalid Credentials' });
+      }
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
   createUser: async function(user, res) {
     try {
       if (!user) {
@@ -19,6 +54,8 @@ module.exports = {
         } else {
           throw new Error('Invalid User type.');
         }
+      } else {
+        throw new Error('Missing User type.');
       }
 
       user.id = uuidv4();

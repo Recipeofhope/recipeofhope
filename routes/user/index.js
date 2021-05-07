@@ -1,4 +1,4 @@
-const { createUser, login: loginUser } = require('./user');
+const { loginUser, createUser } = require('./user');
 
 var router = require('express').Router();
 

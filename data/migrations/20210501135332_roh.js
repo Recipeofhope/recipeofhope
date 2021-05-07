@@ -15,7 +15,7 @@ exports.up = function(knex, Promise) {
       table.binary('password', 60).notNullable();
       table.string('phone_number', 10).notNullable();
       table
-        .enu('user_type', ['Cook', 'Patient', 'Admin', 'Volunteer'])
+        .enu('user_type', ['Cook', 'Patient', 'Admin'])
         .notNullable()
         .defaultTo('Patient');
     })

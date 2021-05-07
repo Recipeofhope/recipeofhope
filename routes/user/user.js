@@ -9,6 +9,18 @@ module.exports = {
       if (!user) {
         throw new Error('Missing user request body.');
       }
+      if (user.user_type) {
+        if (user.user_type === 'Cook') {
+          user.approved = false;
+        } else if (user.user_type === 'Patient') {
+          user.approved = true;
+        } else if (user.user_type === 'Admin') {
+          throw new Error('Admin creation not allowed via API.');
+        } else {
+          throw new Error('Invalid User type.');
+        }
+      }
+
       user.id = uuidv4();
       // salt and hash password.
       if (user.password.length > 64) {
@@ -30,7 +42,7 @@ module.exports = {
             "' already exists. Please choose another username.",
         });
       } else {
-        res.status(400).json({ message: error });
+        res.status(400).json({ message: error.message });
       }
     }
   },

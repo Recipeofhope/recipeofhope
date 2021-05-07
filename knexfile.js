@@ -1,7 +1,7 @@
 module.exports = {
   development: {
     client: 'pg',
-    connection: process.env.DATABASE_URL,
+    connection: 'postgresql://roh:recipes-of-hope@localhost:5432/recipesofhope',
     migrations: {
       directory: './data/migrations',
     },

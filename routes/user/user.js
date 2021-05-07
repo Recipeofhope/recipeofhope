@@ -42,7 +42,7 @@ module.exports = {
             "' already exists. Please choose another username.",
         });
       } else {
-        res.status(400).json({ message: error });
+        res.status(400).json({ message: error.message });
       }
     }
   },

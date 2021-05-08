@@ -1,4 +1,4 @@
-const { createUser, login: loginUser } = require('./user');
+const { loginUser, createUser, deleteUser } = require('./user');
 
 var router = require('express').Router();
 
@@ -8,10 +8,6 @@ router.get('/:id', function(req, res) {
 
 router.put('/:id', function(req, res) {
   console.log('reached put user/:id with id: ' + req.params.id);
-});
-
-router.delete('/:id', function(req, res) {
-  console.log('reached delete user/:id with id: ' + req.params.id);
 });
 
 /**
@@ -81,9 +77,102 @@ router.post('/', async function(req, res) {
   return createUser(req.body, res);
 });
 
+/**
+ *  @swagger
+ *  /login:
+ *    post:
+ *      summary: Logs in a user.
+ *      description: Logs in the given user and returns an access token valid for 15 min, and a refresh token valid for 7 days.
+ *      tags:
+ *        - User
+ *      requestBody:
+ *        required: true
+ *        content:
+ *          application/json:
+ *            schema:
+ *                type: object
+ *                properties:
+ *                  username:
+ *                    type: string
+ *                    example: tarunnurat
+ *                  password:
+ *                    type: string
+ *                    format: password
+ *                    example: password
+ *      responses:
+ *        '200':
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  access_token:
+ *                    type: string
+ *                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNlNjQ0Y2YxLTg3YzMtNDBhZi05YzMzLTYyNjZjY2U1MzlhZSIsImZpcnN0X25hbWUiOiJUYXJ1biAyIiwibGFzdF9uYW1lIjoiU2hhcm1hIiwidXNlcm5hbWUiOiJ0YXJ1bm51cmF0NCIsImFwcHJvdmVkIjpmYWxzZSwicGFzc3dvcmQiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOlszNiw1MCw5OCwzNiw0OSw1MCwzNiw4Miw1Myw1NCw3MCw2OSwxMTcsMTExLDg2LDEwMSwxMTYsMTE0LDQ3LDExMywxMTEsOTAsNjgsOTgsMTAxLDcwLDk4LDg3LDExNywxMDEsNjYsMTA3LDExMSw4Miw2OSwxMTcsMTA3LDY2LDg0LDUwLDcwLDQ5LDcyLDEwMSwxMTksNzYsMTIxLDkwLDExOSw3MCwxMTksMTAwLDgzLDgwLDEwNCwxMTcsNzQsNzIsNTQsNjddfSwicGhvbmVfbnVtYmVyIjoiMTIzNDU2Nzg5MCIsInVzZXJfdHlwZSI6IkFkbWluIiwiaWF0IjoxNjIwNDY3MDM5LCJleHAiOjE2MjA0Njc5Mzl9.Rccx_e67Ki2ExF3Pa5KZfTyyd74fBZvyJ-2dP6AA7XI
+ *                  refresh_token:
+ *                    type: string
+ *                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6ImNlNjQ0Y2YxLTg3YzMtNDbhZi05YzMzLTYyNjZjY2U1MzlhZSIsImZpcnN0X25hbWUiOiJUYXJ1biAyIiwibGFzdF9uYW1lIjoiU2hhcm1hIiwidXNlcm5hbWUiOiJ0YXJ1bm51cmF0NCIsImFwcHJvdmVkIjpmYWxzZSwicGFzc3dvcmQiOnsidHlwZSI6IkJ1ZmZlciIsImRhdGEiOlszNiw1MCw5OCwzNiw0OSw1MCwzNiw4Miw1Myw1NCw3MCw2OSwxMTcsMTExLDg2LDEwMSwxMTYsMTE0LDQ3LDExMywxMTEsOTAsNjgsOTgsMTAxLDcwLDk4LDg3LDExNywxMDEsNjYsMTA3LDExMSw4Miw2OSwxMTcsMTA3LDY2LDg0LDUwLDcwLDQ5LDcyLDEwMSwxMTksNzYsMTIxLDkwLDExOSw3MCwxMTksMTAwLDgzLDgwLDEwNCwxMTcsNzQsNzIsNTQsNjddfSwicGhvbmVfbnVtYmVyIjoiMTIzNDU2Nzg5MCIsInVzZXJfdHlwZSI6IkFkbWluIiwiaWF0IjoxNjIwNDY3MDM5LCJleHAiOjE2MjEwNzE4Mzl9.WywCKkOsag6cNobWwxhM8gqRhEKczHNDK_onOXqnUu4
+ *        '400':
+ *          description: Bad Request
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: Username 'tarunnurat' not found.
+ */
 // Login a user.
 router.post('/login', async function(req, res) {
   return loginUser(req.body, res);
+});
+
+/**
+ *  @swagger
+ *  /{id}:
+ *    delete:
+ *      summary: Deletes a user.
+ *      description: Deletes the given user and returns their id. Only admins can delete other users.
+ *      tags:
+ *        - User
+ *      parameters:
+ *      - in: header
+ *        name: x-access-token
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: JWT access token to authenticate the user.
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: uuid
+ *        required: true
+ *        description: id of the user to be deleted.
+ *      responses:
+ *        '200':
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
+ *                    example: d2c5d53d-c98d-4be4-800b-a3c19708337a
+ *        '400':
+ *          description: Bad Request
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: Only Admins can delete other users..
+ */
+router.delete('/:id', function(req, res) {
+  console.log('reached delete user/:id with id: ' + req.params.id);
+  return deleteUser(req.params.id, req.headers['x-access-token'], res);
 });
 
 module.exports = router;

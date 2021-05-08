@@ -4,6 +4,7 @@ const path = require('path');
 const port = process.env.PORT || 3000;
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+require('dotenv').config();
 
 app.use(express.static('dist'));
 

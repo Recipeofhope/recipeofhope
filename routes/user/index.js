@@ -12,53 +12,6 @@ router.put('/:id', function(req, res) {
 
 /**
  *  @swagger
- *  /{id}:
- *    delete:
- *      summary: Deletes a user.
- *      description: Deletes the given user and returns their id. Only admins can delete other users.
- *      tags:
- *        - User
- *      parameters:
- *      - in: header
- *        name: x-access-token
- *        schema:
- *          type: string
- *        required: true
- *        description: JWT access token to authenticate the user.
- *      - in: path
- *        name: id
- *        schema:
- *          type: uuid
- *        required: true
- *        description: id of the user to be deleted.
- *      responses:
- *        '200':
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  id:
- *                    type: string
- *                    example: d2c5d53d-c98d-4be4-800b-a3c19708337a
- *        '400':
- *          description: Bad Request
- *          content:
- *            application/json:
- *              schema:
- *                type: object
- *                properties:
- *                  message:
- *                    type: string
- *                    example: Only Admins can delete other users..
- */
-router.delete('/:id', function(req, res) {
-  console.log('reached delete user/:id with id: ' + req.params.id);
-  return deleteUser(req.params.id, req.headers['x-access-token'], res);
-});
-
-/**
- *  @swagger
  *  /:
  *    post:
  *      summary: Create a user.
@@ -173,6 +126,53 @@ router.post('/', async function(req, res) {
 // Login a user.
 router.post('/login', async function(req, res) {
   return loginUser(req.body, res);
+});
+
+/**
+ *  @swagger
+ *  /{id}:
+ *    delete:
+ *      summary: Deletes a user.
+ *      description: Deletes the given user and returns their id. Only admins can delete other users.
+ *      tags:
+ *        - User
+ *      parameters:
+ *      - in: header
+ *        name: x-access-token
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: JWT access token to authenticate the user.
+ *      - in: path
+ *        name: id
+ *        schema:
+ *          type: uuid
+ *        required: true
+ *        description: id of the user to be deleted.
+ *      responses:
+ *        '200':
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  id:
+ *                    type: string
+ *                    example: d2c5d53d-c98d-4be4-800b-a3c19708337a
+ *        '400':
+ *          description: Bad Request
+ *          content:
+ *            application/json:
+ *              schema:
+ *                type: object
+ *                properties:
+ *                  message:
+ *                    type: string
+ *                    example: Only Admins can delete other users..
+ */
+router.delete('/:id', function(req, res) {
+  console.log('reached delete user/:id with id: ' + req.params.id);
+  return deleteUser(req.params.id, req.headers['x-access-token'], res);
 });
 
 module.exports = router;

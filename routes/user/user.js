@@ -4,6 +4,26 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
+  deleteUser: async function(userId, accessToken, res) {
+    try {
+      const decodedUser = await getDecodedUser(accessToken);
+      if (!decodedUser.user_type) {
+        throw new Error('Invalid payload from access token.');
+      }
+      if (decodedUser.user_type !== 'Admin') {
+        throw new Error('Only Admins can delete other users.');
+      }
+      if (!userId) {
+        throw new Error('User ID not provided.');
+      }
+      await knex('user')
+        .where('id', userId)
+        .del();
+      res.status(200).json({ id: userId });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
   loginUser: async function(user, res) {
     try {
       if (!user) {
@@ -20,18 +40,22 @@ module.exports = {
           'User with username ' + "'" + user.username + "' not found."
         );
       }
-      const match = await bcrypt.compare(
+      const match = await authenticateUser(
         user.password,
         dbUser.password.toString()
       );
       if (match) {
-        const accessToken = jwt.sign(dbUser, process.env.TOKEN_SECRET, {
+        const accessToken = jwt.sign(dbUser, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: '15m',
         });
-        const refreshToken = jwt.sign(dbUser, process.env.TOKEN_SECRET, {
-          expiresIn: '7 days',
-        });
-        res.json({ accessToken: accessToken, refreshToken: refreshToken });
+        const refreshToken = jwt.sign(
+          dbUser,
+          process.env.REFRESH_TOKEN_SECRET,
+          {
+            expiresIn: '7 days',
+          }
+        );
+        res.json({ access_token: accessToken, refresh_token: refreshToken });
       } else {
         res.status(400).json({ message: 'Invalid Credentials' });
       }
@@ -84,3 +108,19 @@ module.exports = {
     }
   },
 };
+
+async function getDecodedUser(accessToken) {
+  if (!accessToken) {
+    throw new Error('Access token not provided.');
+  }
+  const decodedUser = await jwt.verify(
+    accessToken,
+    process.env.ACCESS_TOKEN_SECRET
+  );
+  return decodedUser;
+}
+
+async function authenticateUser(userPassword, dbUserPassword) {
+  const match = await bcrypt.compare(userPassword, dbUserPassword);
+  return match;
+}

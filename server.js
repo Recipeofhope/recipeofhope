@@ -8,11 +8,14 @@ require('dotenv').config();
 
 app.use(express.static('dist'));
 
+app.use(require('./middleware/authentication-filter'))
+
 app.use(express.json());
 app.use('/user', require('./routes/user'));
 app.use('/cook', require('./routes/cook'));
 app.use('/patient', require('./routes/patient'));
 app.use('/admin', require('./routes/admin'));
+
 
 const options = {
   definition: {
@@ -43,7 +46,7 @@ const options = {
 const specs = swaggerJsdoc(options);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-app.get('*', (req, res) => {
+app.get('login', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 

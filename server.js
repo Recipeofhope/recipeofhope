@@ -17,6 +17,7 @@ app.use('/patient', require('./routes/patient'));
 app.use('/admin', require('./routes/admin'));
 
 
+
 const options = {
   definition: {
     openapi: '3.0.0',
@@ -46,7 +47,7 @@ const options = {
 const specs = swaggerJsdoc(options);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 
-app.get('login', (req, res) => {
+app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
 

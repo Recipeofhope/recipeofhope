@@ -1,4 +1,4 @@
-const { loginUser, createUser, deleteUser } = require('./user');
+const { loginUser, createUser, deleteUser, updateUser } = require('./user');
 
 var router = require('express').Router();
 
@@ -6,8 +6,9 @@ router.get('/:id', function(req, res) {
   console.log('reached get user/:id with id: ' + req.params.id);
 });
 
-router.put('/:id', function(req, res) {
-  console.log('reached put user/:id with id: ' + req.params.id);
+router.put('/:id', (req, res) => {
+  console.log(`Updating user with id ${req.params.id}`);
+  return updateUser(req.params.id, req.body, res);
 });
 
 /**

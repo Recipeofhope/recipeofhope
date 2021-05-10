@@ -94,6 +94,9 @@ module.exports = {
       const localityId = await knex('locality')
         .where({ name: user.address.locality })
         .first('id');
+      if (!localityId || localityId.id) {
+        throw new Error('Invalid address locality.');
+      }
       user.address.locality_id = localityId.id;
       const address = user.address;
       delete address.locality;

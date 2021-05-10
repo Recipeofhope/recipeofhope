@@ -1,3 +1,5 @@
+const jwt = require('jsonwebtoken');
+
 /* All paths which require auth */
 const paths = []
 

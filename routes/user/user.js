@@ -76,22 +76,44 @@ module.exports = {
         } else if (user.user_type === 'Admin') {
           throw new Error('Admin creation not allowed via API.');
         } else {
-          throw new Error('Invalid User type.');
+          throw new Error('Invalid user type.');
         }
       } else {
-        throw new Error('Missing User type.');
+        throw new Error('Missing user type.');
       }
 
       user.id = uuidv4();
+      if (!user.address) {
+        throw new Error('Missing user address details.');
+      }
+      user.address.id = uuidv4();
+      user.address.user_id = user.id;
+      if (!user.address.locality) {
+        throw new Error('Missing user address locality.');
+      }
+      const localityId = await knex('locality')
+        .where({ name: user.address.locality })
+        .first('id');
+      user.address.locality_id = localityId.id;
+      const address = user.address;
+      delete address.locality;
+      delete user.address;
       // salt and hash password.
       if (user.password.length > 64) {
         throw new Error('Password field must be less than 64 characters.');
       }
       user.password = await bcrypt.hash(user.password, 12);
 
-      const [id] = await knex('user')
-        .returning('id')
-        .insert(user);
+      const [id] = await knex.transaction((trx) => {
+        return trx('user')
+          .insert(user)
+          .then(() => {
+            return trx('address')
+              .insert(address)
+              .returning('user_id');
+          });
+      });
+
       res.status(201).json({ id: id });
     } catch (error) {
       if (error.constraint && error.constraint === 'user_username_unique') {

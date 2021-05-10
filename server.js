@@ -8,7 +8,7 @@ require('dotenv').config();
 
 app.use(express.static('dist'));
 
-app.use(require('./middleware/authentication-filter'))
+app.use(require('./middleware/authorization-filter'))
 
 app.use(express.json());
 app.use('/user', require('./routes/user'));

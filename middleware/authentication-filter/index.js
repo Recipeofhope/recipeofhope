@@ -1,5 +1,5 @@
 /* All paths which require auth */
-const paths = ['/user/login']
+const paths = []
 
 var authFilter = async function(req, res, next) {
 	const path = req.path;
@@ -19,7 +19,7 @@ var authFilter = async function(req, res, next) {
 		} catch (error) {
 			console.log(`Rejected request for path : ${path}. Authorization failed.`);
 		
-      		res.status(400).json({ message: error.message });
+      		res.status(401).json({ message: error.message });
       		
       		return;
     	}

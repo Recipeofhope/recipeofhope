@@ -1,4 +1,4 @@
-const { loginUser, createUser, deleteUser, updateUser } = require('./user');
+const { loginUser, createUser, deleteUser, getUser, updateUser } = require('./user');
 
 var router = require('express').Router();
 
@@ -76,6 +76,10 @@ router.put('/:id', (req, res) => {
  */
 router.post('/', async function(req, res) {
   return createUser(req.body, res);
+});
+
+router.get('/user-details', function(req, res) {
+  return getUser(req.headers['x-access-token'], res);
 });
 
 /**
@@ -173,7 +177,7 @@ router.post('/login', async function(req, res) {
  */
 router.delete('/:id', function(req, res) {
   console.log('reached delete user/:id with id: ' + req.params.id);
-  return deleteUser(req.params.id, req.headers['x-access-token'], res);
+  return deleteUser(req.params.id, req.decodedUser, res);
 });
 
 module.exports = router;

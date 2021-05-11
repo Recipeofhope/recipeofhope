@@ -205,6 +205,7 @@ function getReturnObj(result) {
   returnObj.last_name = result[0].last_name;
   returnObj.username = result[0].username;
   returnObj.approved = result[0].approved;
+  returnObj.user_type = result[0].user_type;
   returnObj.address_first_line = result[0].address_first_line;
   returnObj.address_second_line = result[0].address_second_line;
   returnObj.address_building_name = result[0].address_building_name;

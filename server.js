@@ -8,11 +8,15 @@ require('dotenv').config();
 
 app.use(express.static('dist'));
 
+app.use(require('./middleware/authorization-filter'))
+
 app.use(express.json());
 app.use('/user', require('./routes/user'));
 app.use('/cook', require('./routes/cook'));
 app.use('/patient', require('./routes/patient'));
 app.use('/admin', require('./routes/admin'));
+
+
 
 const options = {
   definition: {

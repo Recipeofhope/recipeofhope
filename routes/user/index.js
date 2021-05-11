@@ -1,10 +1,6 @@
-const { loginUser, createUser, deleteUser } = require('./user');
+const { loginUser, createUser, deleteUser, getUser } = require('./user');
 
 var router = require('express').Router();
-
-router.get('/:id', function(req, res) {
-  console.log('reached get user/:id with id: ' + req.params.id);
-});
 
 router.put('/:id', function(req, res) {
   console.log('reached put user/:id with id: ' + req.params.id);
@@ -75,6 +71,10 @@ router.put('/:id', function(req, res) {
  */
 router.post('/', async function(req, res) {
   return createUser(req.body, res);
+});
+
+router.get('/user-details', function(req, res) {
+  return getUser(req.headers['x-access-token'], res);
 });
 
 /**

@@ -4,6 +4,52 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
+  getUser: async function(accessToken, res) {
+    try {
+      const decodedUser = await getDecodedUser(accessToken);
+      let getDetailsQuery = knex
+        .select(
+          'user.id',
+          'user.first_name',
+          'user.last_name',
+          'user.username',
+          'user.approved',
+          'user.user_type',
+          'meal.ready as meal_ready',
+          'meal.scheduled_for as meal_scheduled_for',
+          'meal.cancelled as meal_cancelled',
+          'meal.delivered as meal_delivered',
+          'address.first_line AS address_first_line',
+          'address.second_line AS address_second_line',
+          'address.building_name AS address_building_name',
+          'address.house_number AS address_house_number',
+          'address.zipcode AS address_zipcode',
+          'address.state AS address_state',
+          'address.city AS address_city'
+        )
+        .from('user');
+      if (decodedUser.user_type === 'Cook') {
+        getDetailsQuery = getDetailsQuery.leftJoin(
+          'meal',
+          'meal.cook_id',
+          'user.id'
+        );
+      } else if (decodedUser.user_type === 'Patient') {
+        getDetailsQuery = getDetailsQuery.leftJoin(
+          'meal',
+          'meal.patient_id',
+          'user.id'
+        );
+      }
+      let result = await getDetailsQuery
+        .leftJoin('address', 'address.user_id', 'user.id')
+        .where('user.id', '=', decodedUser.id);
+      const returnObj = getReturnObj(result);
+      res.status(200).json(returnObj);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
   deleteUser: async function(userId, decodedUser, res) {
     try {
       if (decodedUser.user_type !== 'Admin') {
@@ -90,7 +136,7 @@ module.exports = {
       const localityId = await knex('locality')
         .where({ name: user.address.locality })
         .first('id');
-      if (!localityId || localityId.id) {
+      if (!localityId || !localityId.id) {
         throw new Error('Invalid address locality.');
       }
       user.address.locality_id = localityId.id;
@@ -144,4 +190,33 @@ async function getDecodedUser(accessToken) {
 async function authenticateUser(userPassword, dbUserPassword) {
   const match = await bcrypt.compare(userPassword, dbUserPassword);
   return match;
+}
+
+function getReturnObj(result) {
+  const returnObj = {};
+  if (!result || typeof result === 'undefined' || result.length == 0) {
+    throw new Error('Error while fetching user details.');
+  }
+  returnObj.first_name = result[0].first_name;
+  returnObj.last_name = result[0].last_name;
+  returnObj.username = result[0].username;
+  returnObj.approved = result[0].approved;
+  returnObj.user_type = result[0].user_type;
+  returnObj.address_first_line = result[0].address_first_line;
+  returnObj.address_second_line = result[0].address_second_line;
+  returnObj.address_building_name = result[0].address_building_name;
+  returnObj.address_house_number = result[0].address_house_number;
+  returnObj.address_zipcode = result[0].address_zipcode;
+  returnObj.address_state = result[0].address_state;
+  returnObj.address_city = result[0].address_city;
+  returnObj.meals = [];
+  for (const mealObj of result) {
+    let meal = {};
+    meal.meal_ready = mealObj.meal_ready;
+    meal.meal_scheduled_for = mealObj.meal_scheduled_for;
+    meal.meal_cancelled = mealObj.meal_cancelled;
+    meal.meal_delivered = mealObj.meal_delivered;
+    returnObj.meals.push(meal);
+  }
+  return returnObj;
 }

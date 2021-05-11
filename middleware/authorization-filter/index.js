@@ -6,7 +6,8 @@ const jwt = require('jsonwebtoken');
 const paths = [
 	'/user/:DELETE', 
 	'/user/user-details', 
-	'/user/:PUT'
+	'/user/:PUT',
+	'/cancel-meal/:PUT'
 ];
 
 var authFilter = async function(req, res, next) {

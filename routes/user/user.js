@@ -4,9 +4,8 @@ const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
 
 module.exports = {
-  getUser: async function(accessToken, res) {
+  getUser: async function(user, res) {
     try {
-      const decodedUser = await getDecodedUser(accessToken);
       let getDetailsQuery = knex
         .select(
           'user.id',
@@ -28,13 +27,13 @@ module.exports = {
           'address.city AS address_city'
         )
         .from('user');
-      if (decodedUser.user_type === 'Cook') {
+      if (user.user_type === 'Cook') {
         getDetailsQuery = getDetailsQuery.leftJoin(
           'meal',
           'meal.cook_id',
           'user.id'
         );
-      } else if (decodedUser.user_type === 'Patient') {
+      } else if (user.user_type === 'Patient') {
         getDetailsQuery = getDetailsQuery.leftJoin(
           'meal',
           'meal.patient_id',
@@ -43,7 +42,7 @@ module.exports = {
       }
       let result = await getDetailsQuery
         .leftJoin('address', 'address.user_id', 'user.id')
-        .where('user.id', '=', decodedUser.id);
+        .where('user.id', '=', user.id);
       const returnObj = getReturnObj(result);
       res.status(200).json(returnObj);
     } catch (error) {
@@ -175,17 +174,6 @@ module.exports = {
     }
   },
 };
-
-async function getDecodedUser(accessToken) {
-  if (!accessToken) {
-    throw new Error('Access token not provided.');
-  }
-  const decodedUser = await jwt.verify(
-    accessToken,
-    process.env.ACCESS_TOKEN_SECRET
-  );
-  return decodedUser;
-}
 
 async function authenticateUser(userPassword, dbUserPassword) {
   const match = await bcrypt.compare(userPassword, dbUserPassword);

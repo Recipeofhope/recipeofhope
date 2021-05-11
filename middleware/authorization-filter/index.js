@@ -1,14 +1,19 @@
 const jwt = require('jsonwebtoken');
 
 /* All paths which require auth */
-const paths = []
+
+/* Format -> path:method */
+const paths = [
+	"/user/:DELETE"
+]
 
 var authFilter = async function(req, res, next) {
 	const path = req.path;
+	const method = req.method;
 	
-	console.log(`Request received for path : ${path}`);
+	console.log(`Request received for path : ${path}, method : ${method}`);
 	
-	if (paths.includes(path)) {
+	if (requiresAuth(path, method)) {
 		const accessToken = req.headers['x-access-token'];
 		
 		/* Verify jwt */
@@ -16,19 +21,29 @@ var authFilter = async function(req, res, next) {
 			const user = await getDecodedUser(accessToken);
 			
 			/* Save user in request for later stages */
-			req.user = user;
+			req.decodedUser = user;
 			
 		} catch (error) {
 			console.log(`Rejected request for path : ${path}. Authorization failed.`);
-		
-      		res.status(401).json({ message: error.message });
-      		
-      		return;
-    	}
+      res.status(401).json({ message: error.message });
+      return;
+    }
 	}
 	
 	/* Proceed to next stage in pipeline */
 	next();
+}
+
+function requiresAuth(reqPath, method) {
+	for (const path of paths) {
+		const meta = path.split(":");
+
+		if (reqPath.includes(meta[0]) && meta[1].toUpperCase() == method.toUpperCase()) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 async function getDecodedUser(accessToken) {

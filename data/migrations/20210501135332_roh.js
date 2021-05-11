@@ -58,13 +58,13 @@ exports.up = function(knex, Promise) {
         .notNullable();
       table
         .uuid('cook_id')
-        .nullable()
+        .notNullable()
         .references('id')
         .inTable('user')
         .onDelete('CASCADE');
       table
         .uuid('patient_id')
-        .notNullable()
+        .nullable()
         .references('id')
         .inTable('user')
         .onDelete('CASCADE');

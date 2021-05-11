@@ -8,7 +8,7 @@ router.get('/:id', function(req, res) {
 
 router.put('/:id', (req, res) => {
   console.log(`Updating user with id ${req.params.id}`);
-  return updateUser(req.params.id, req.body, req.headers['x-access-token'], res);
+  return updateUser(req.params.id, req.body, req.decodedUser, res);
 });
 
 /**

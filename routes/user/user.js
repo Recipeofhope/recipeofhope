@@ -132,16 +132,15 @@ module.exports = {
       }
     }
   },
-  updateUser: async (id, user, res) => {
+  updateUser: async (id, user, accessToken, res) => {
     try {
       if (!user) {
         throw new Error('Missing user request body.');
       }
 
-      const existingUser = await knex('user')
-        .where({ id: id });
-
-      if((existingUser || []).length == 0) {
+      const decodedUser = await getDecodedUser(accessToken);
+      // invalid user!
+      if(!decodedUser) {
         res.status(400).json({ message: "Invalid user" });
       } else {
         if (!user.address) {
@@ -156,7 +155,7 @@ module.exports = {
           .where({ name: user.address.locality })
           .first('id');
         
-        if (!localityId || localityId.id) {
+        if (!localityId || !localityId.id) {
           throw new Error('Invalid address locality.');
         }
 

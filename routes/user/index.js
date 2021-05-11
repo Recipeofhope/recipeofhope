@@ -171,7 +171,8 @@ router.post('/login', async function(req, res) {
  *                    example: Only Admins can delete other users..
  */
 router.delete('/:id', function(req, res) {
-  return deleteUser(req.params.id, req.headers['x-access-token'], res);
+  console.log('reached delete user/:id with id: ' + req.params.id);
+  return deleteUser(req.params.id, req.decodedUser, res);
 });
 
 module.exports = router;

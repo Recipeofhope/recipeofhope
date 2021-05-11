@@ -50,12 +50,8 @@ module.exports = {
       res.status(400).json({ message: error.message });
     }
   },
-  deleteUser: async function(userId, accessToken, res) {
+  deleteUser: async function(userId, decodedUser, res) {
     try {
-      const decodedUser = await getDecodedUser(accessToken);
-      if (!decodedUser.user_type) {
-        throw new Error('Invalid payload from access token.');
-      }
       if (decodedUser.user_type !== 'Admin') {
         throw new Error('Only Admins can delete other users.');
       }

@@ -173,6 +173,53 @@ module.exports = {
       }
     }
   },
+  updateUser: async (id, user, decodedUser, res) => {
+    try {
+      if (!user) {
+        throw new Error('Missing user request body.');
+      }
+      
+      // invalid user!
+      if(!decodedUser) {
+        res.status(400).json({ message: "Invalid user" });
+      } else {
+        if (!user.address) {
+          throw new Error('Missing user address details.');
+        }
+
+        if (!user.address.locality) {
+          throw new Error('Missing user address locality.');
+        }
+
+        const localityId = await knex('locality')
+          .where({ name: user.address.locality })
+          .first('id');
+        
+        if (!localityId || !localityId.id) {
+          throw new Error('Invalid address locality.');
+        }
+
+        user.address.locality_id = localityId.id;
+        const address = user.address;
+        delete address.locality;
+        delete user.address;
+
+        const [ userId ] = await knex.transaction((trx) => {
+          return trx('user')
+            .update(user)
+            .where({ id })
+            .then(() => {
+              return trx('address')
+                .update(address)
+                .returning('user_id');
+            });
+        });
+        res.status(204).json({ id: userId, message: "updated user" });
+      }
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  } 
 };
 
 async function authenticateUser(userPassword, dbUserPassword) {

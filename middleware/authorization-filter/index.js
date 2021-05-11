@@ -4,7 +4,8 @@ const jwt = require('jsonwebtoken');
 
 /* Format -> path:method */
 const paths = [
-	"/user/:DELETE"
+	"/user/:DELETE",
+	"/user/:PUT"
 ]
 
 var authFilter = async function(req, res, next) {

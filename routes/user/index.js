@@ -1,10 +1,14 @@
-const { loginUser, createUser, deleteUser, getUser, updateUser } = require('./user');
+const {
+  loginUser,
+  createUser,
+  deleteUser,
+  getUser,
+  getAccessToken,
+  logout,
+  updateUser,
+} = require('./user');
 
 var router = require('express').Router();
-
-router.get('/:id', function(req, res) {
-  console.log('reached get user/:id with id: ' + req.params.id);
-});
 
 router.put('/:id', (req, res) => {
   console.log(`Updating user with id ${req.params.id}`);
@@ -79,7 +83,15 @@ router.post('/', async function(req, res) {
 });
 
 router.get('/user-details', function(req, res) {
-  return getUser(req.headers['x-access-token'], res);
+  return getUser(req.decodedUser, res);
+});
+
+router.get('/access-token', function(req, res) {
+  return getAccessToken(req.headers['x-refresh-token'], res);
+});
+
+router.post('/logout', async function(req, res) {
+  return logout(req.headers['x-refresh-token'], res);
 });
 
 /**

@@ -76,7 +76,6 @@ exports.up = function(knex, Promise) {
         .onDelete('CASCADE');
       table.boolean('ready').nullable();
       table.date('scheduled_for').notNullable();
-      table.boolean('cancelled').nullable();
       table.boolean('delivered').nullable();
     })
     .createTableIfNotExists('service_areas', function(table) {
@@ -92,7 +91,6 @@ exports.up = function(knex, Promise) {
         .onDelete('CASCADE');
       table
         .uuid('service_area_id')
-        .notNullable()
         .references('id')
         .inTable('locality')
         .onDelete('CASCADE');

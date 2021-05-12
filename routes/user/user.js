@@ -2,6 +2,7 @@ const knex = require('../../data/db');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
+const refreshTokens = {};
 
 module.exports = {
   getUser: async function(user, res) {
@@ -16,7 +17,6 @@ module.exports = {
           'user.user_type',
           'meal.ready as meal_ready',
           'meal.scheduled_for as meal_scheduled_for',
-          'meal.cancelled as meal_cancelled',
           'meal.delivered as meal_delivered',
           'address.first_line AS address_first_line',
           'address.second_line AS address_second_line',
@@ -96,12 +96,17 @@ module.exports = {
             expiresIn: '7 days',
           }
         );
-        res.json({ access_token: accessToken, refresh_token: refreshToken });
+        refreshTokens[refreshToken] = user.username;
+        res.json({
+          auth: true,
+          access_token: accessToken,
+          refresh_token: refreshToken,
+        });
       } else {
-        res.status(400).json({ message: 'Invalid Credentials' });
+        res.status(400).json({ auth: false, message: 'Invalid Credentials' });
       }
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ auth: false, message: error.message });
     }
   },
   createUser: async function(user, res) {
@@ -140,6 +145,7 @@ module.exports = {
       }
       user.address.locality_id = localityId.id;
       const address = user.address;
+      const locality = address.locality;
       delete address.locality;
       delete user.address;
       // salt and hash password.
@@ -148,7 +154,7 @@ module.exports = {
       }
       user.password = await bcrypt.hash(user.password, 12);
 
-      const [id] = await knex.transaction((trx) => {
+      await knex.transaction((trx) => {
         return trx('user')
           .insert(user)
           .then(() => {
@@ -157,8 +163,23 @@ module.exports = {
               .returning('user_id');
           });
       });
+      const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '15m',
+      });
+      const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
+        expiresIn: '7 days',
+      });
 
-      res.status(201).json({ id: id });
+      refreshTokens[refreshToken] = user.username;
+      delete user.id;
+      delete user.approved;
+      delete user.password;
+      delete address.id;
+      delete address.locality_id;
+      delete address.user_id;
+      address.locality = locality;
+
+      res.status(201).json({ user, address, accessToken, refreshToken });
     } catch (error) {
       if (error.constraint && error.constraint === 'user_username_unique') {
         res.status(400).json({
@@ -178,10 +199,10 @@ module.exports = {
       if (!user) {
         throw new Error('Missing user request body.');
       }
-      
+
       // invalid user!
-      if(!decodedUser) {
-        res.status(400).json({ message: "Invalid user" });
+      if (!decodedUser) {
+        res.status(400).json({ message: 'Invalid user' });
       } else {
         if (!user.address) {
           throw new Error('Missing user address details.');
@@ -194,7 +215,7 @@ module.exports = {
         const localityId = await knex('locality')
           .where({ name: user.address.locality })
           .first('id');
-        
+
         if (!localityId || !localityId.id) {
           throw new Error('Invalid address locality.');
         }
@@ -204,7 +225,7 @@ module.exports = {
         delete address.locality;
         delete user.address;
 
-        const [ userId ] = await knex.transaction((trx) => {
+        const [userId] = await knex.transaction((trx) => {
           return trx('user')
             .update(user)
             .where({ id })
@@ -214,12 +235,63 @@ module.exports = {
                 .returning('user_id');
             });
         });
-        res.status(204).json({ id: userId, message: "updated user" });
+        res.status(204).json({ id: userId, message: 'updated user' });
       }
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
-  } 
+  },
+  getAccessToken: async (refreshToken, res) => {
+    try {
+      if (!refreshToken) {
+        throw new Error('Missing refresh token in request header.');
+      }
+      // check if refresh token is in cache.
+      if (refreshTokens[refreshToken]) {
+        // Check if token is not expired.
+        try {
+          const decodedUser = await jwt.verify(
+            refreshToken,
+            process.env.REFRESH_TOKEN_SECRET
+          );
+          // exp field needs to be removed before making new access token for the same object.
+          delete decodedUser.exp;
+          const accessToken = jwt.sign(
+            decodedUser,
+            process.env.ACCESS_TOKEN_SECRET,
+            {
+              expiresIn: '15m',
+            }
+          );
+          res.json({
+            auth: true,
+            access_token: accessToken,
+          });
+        } catch (error) {
+          if (error.name === 'TokenExpiredError') {
+            // Refresh token has expired. Remove it from the cache.
+            delete refreshTokens[refreshToken];
+            throw new Error(
+              'Refresh token has expired. Please login the user again.'
+            );
+          }
+          throw error;
+        }
+      } else {
+        throw new Error(
+          'Refresh token is inactive. Please login the user again.'
+        );
+      }
+    } catch (error) {
+      res.status(400).json({ auth: false, message: error.message });
+    }
+  },
+  logout: async (refreshToken, res) => {
+    if (refreshToken) {
+      delete refreshTokens[refreshToken];
+    }
+    res.send(204);
+  },
 };
 
 async function authenticateUser(userPassword, dbUserPassword) {
@@ -249,7 +321,6 @@ function getReturnObj(result) {
     let meal = {};
     meal.meal_ready = mealObj.meal_ready;
     meal.meal_scheduled_for = mealObj.meal_scheduled_for;
-    meal.meal_cancelled = mealObj.meal_cancelled;
     meal.meal_delivered = mealObj.meal_delivered;
     returnObj.meals.push(meal);
   }

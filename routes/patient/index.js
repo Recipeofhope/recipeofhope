@@ -3,7 +3,6 @@ const { getMeals } = require('./patient');
 var router = require('express').Router();
 
 router.get('/get-meals', function(req, res) {
-  console.log('reached patient/get-meal ');
   return getMeals(req.decodedUser, res);
 });
 

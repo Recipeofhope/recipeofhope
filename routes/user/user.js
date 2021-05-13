@@ -81,11 +81,11 @@ module.exports = {
           'User with username ' + "'" + user.username + "' not found."
         );
       }
-      /* ayeshni const match = await authenticateUser(
+      const match = await authenticateUser(
         user.password,
         dbUser.password.toString()
-      );*/
-      const match = user.password === dbUser.password.toString();
+      ); 
+
       if (match) {
         const accessToken = jwt.sign(dbUser, process.env.ACCESS_TOKEN_SECRET, {
           expiresIn: '15m',

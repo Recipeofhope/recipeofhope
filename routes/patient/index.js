@@ -1,4 +1,10 @@
+const { getMeals } = require('./patient');
+
 var router = require('express').Router();
+
+router.get('/get-meals', function(req, res) {
+  return getMeals(req.decodedUser, res);
+});
 
 router.post('/book-meal', function(req, res) {
   console.log('reached patient /book-meal ');
@@ -9,3 +15,4 @@ router.post('/cancel-meal/:id', function(req, res) {
 });
 
 module.exports = router;
+

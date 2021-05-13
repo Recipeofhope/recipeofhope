@@ -290,7 +290,7 @@ module.exports = {
     if (refreshToken) {
       delete refreshTokens[refreshToken];
     }
-    res.send(204);
+    res.sendStatus(status);
   },
 };
 

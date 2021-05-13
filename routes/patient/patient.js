@@ -1,14 +1,17 @@
 const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
+const { JsonWebTokenError } = require('jsonwebtoken');
 
 
 module.exports = {
   getMeals: async function (decodedUser, res) {
     try {
-      if (!decodedUser) 
+      if (!decodedUser)
         res.status(400).json({ message: 'Invalid user' })
-      else if (decodedUser.user_type != 'Patient')  
-        res.status(400).json({ message: 'User type is not allowed to book meal'})
+
+      else if (decodedUser.user_type != 'Patient')
+        res.status(400).json({ message: 'User type is not allowed to book meal' })
+
       else {
         const today = new Date();
         const tomorrow = new Date();
@@ -47,6 +50,7 @@ module.exports = {
           .where('user.user_type', '=', 'Cook');
 
         let resultCooks = await getCooksQuery;
+
 
         //Final list of available meals from cooks.
         if (!resultCooks || resultCooks.length == 0) {
@@ -110,7 +114,74 @@ module.exports = {
         res.status(200).json(resultMeals);
       }
     }
+    catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
 
+  bookMeals: async function (decodedUser, requestBody, res) {
+    try {
+      if (!decodedUser)
+        res.status(400).json({ message: 'Invalid user' })
+
+      else if (decodedUser.user_type != 'Patient')
+        res.status(400).json({ message: 'User type is not allowed to book meal' })
+
+      else {
+        if (!requestBody || requestBody.length === 0) {
+          throw new Error('Missing request body with booking details.');
+        }
+
+        console.log(decodedUser);
+        console.log(requestBody);
+
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getUTCDate() + 1);
+
+        await knex.transaction(async (tr) => {
+          success = 0;
+          totalMeals = 0;
+
+
+          //Getting all available meals for cook IDs sent by the patient.
+
+          for (i = 0; i < requestBody.length; i++) {
+
+            let resultMeals = await tr
+              .select(
+                'meal.id')
+              .from('meal')
+              .where('meal.scheduled_for', "=", tomorrow)
+              .whereNull('meal.patient_id')
+              .where('cook_id', '=', requestBody[i].cook_id);
+
+            if (!resultMeals || resultMeals.length == 0) {
+              throw new Error('Error while fetching meal details.');
+            }
+
+            // Updating patient ID to user ID for the number of meals sent by the patient for each cook selected.
+
+            for (j = 0; j < requestBody[i].number_of_meals; j++) {
+              result = await tr('meal')
+                .update({ patient_id: decodedUser.id })
+                .where('meal.id', '=', resultMeals[j].id);
+            }
+
+            success += result;
+            totalMeals += requestBody[i].number_of_meals;
+          }
+          
+          if (success == totalMeals)
+            res.status(200).json({ message: 'Success! All meals booked.' });
+          //return Json('Success! All meals booked.');
+          else if (success > 0 && success < totalMeals)
+            res.status(200).json({ message: 'Some meals booked successfully. Please check which cook/ meals were booked and try again.' });
+          else if (success == 0)
+            throw new Error('Oops, something failed! Sorry, but your meals were not booked. Please try again and contact support if the problem persists!');
+        });
+      }
+    }
     catch (error) {
       res.status(400).json({ message: error.message });
     }

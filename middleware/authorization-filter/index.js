@@ -4,18 +4,11 @@ const jwt = require('jsonwebtoken');
 
 /* Format -> path:method */
 const paths = [
-<<<<<<< HEAD
   '/user:DELETE',
   '/user/user-details:GET',
   '/user:PUT',
   '/cook/schedule:PUT',
-  '/patient/get-meals/:GET'
-=======
-	'/user/:DELETE', 
-	'/user/user-details', 
-	'/user/:PUT',
   '/patient/get-meals:GET'
->>>>>>> 30772ba (Get meals with location matching)
 ];
 
 var authFilter = async function(req, res, next) {

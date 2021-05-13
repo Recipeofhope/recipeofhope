@@ -84,7 +84,7 @@ module.exports = {
       const match = await authenticateUser(
         user.password,
         dbUser.password.toString()
-      ); 
+      );
 
       if (match) {
         const accessToken = jwt.sign(dbUser, process.env.ACCESS_TOKEN_SECRET, {

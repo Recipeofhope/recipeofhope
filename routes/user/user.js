@@ -24,7 +24,8 @@ module.exports = {
           'address.house_number AS address_house_number',
           'address.zipcode AS address_zipcode',
           'address.state AS address_state',
-          'address.city AS address_city'
+          'address.city AS address_city',
+          'locality.name AS address_locality'
         )
         .from('user');
       if (user.user_type === 'Cook') {
@@ -42,6 +43,7 @@ module.exports = {
       }
       let result = await getDetailsQuery
         .leftJoin('address', 'address.user_id', 'user.id')
+        .leftJoin('locality', 'address.locality_id', 'locality.id')
         .where('user.id', '=', user.id);
       const returnObj = getReturnObj(result);
       res.status(200).json(returnObj);
@@ -317,13 +319,24 @@ function getReturnObj(result) {
   returnObj.address_zipcode = result[0].address_zipcode;
   returnObj.address_state = result[0].address_state;
   returnObj.address_city = result[0].address_city;
-  returnObj.meals = [];
+  returnObj.address_locality = result[0].address_locality;
+  returnObj.meals = {};
   for (const mealObj of result) {
-    let meal = {};
+    const meal = {};
     meal.meal_ready = mealObj.meal_ready;
-    meal.meal_scheduled_for = mealObj.meal_scheduled_for;
     meal.meal_delivered = mealObj.meal_delivered;
-    returnObj.meals.push(meal);
+
+    const meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
+      'en-CA'
+    );
+    if (!(meal_scheduled_for in returnObj.meals)) {
+      returnObj.meals[meal_scheduled_for] = [];
+    }
+
+    returnObj.meals[meal_scheduled_for].push({
+      meal_ready: meal.meal_ready,
+      meal_delivered: meal.meal_delivered,
+    });
   }
   return returnObj;
 }

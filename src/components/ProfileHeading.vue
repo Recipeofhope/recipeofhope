@@ -10,7 +10,7 @@
           </svg>
         </span>
         <h2 class="text-2xl leading-7 text-gray-900 sm:text-3xl sm:truncate px-5">
-          <p class="font-bold">Hi, John Doe</p>
+          <p class="font-bold">Hi, {{name}}</p>
           <p class="text-sm text-gray-500 italic">Thank you for volunteeing as a cook.</p>
         </h2>
       </div>
@@ -22,3 +22,8 @@
     </div>
   </div>
 </template>
+<script>
+export default {
+  props: ['name']
+}
+</script>

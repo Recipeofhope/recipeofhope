@@ -11,6 +11,7 @@
         <nav class="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-gray-400	flex flex-wrap items-center text-base justify-center">
           <router-link class="mr-5 hover:text-gray-900" to="/cook">Cooks</router-link>
           <router-link class="mr-5 hover:text-gray-900" to="/recipient">Recipients</router-link>
+          <router-link class="mr-5 hover:text-gray-900" to="/admin">Admin</router-link>
         </nav>
         <button class="inline-flex items-center text-white bg-button border-0 py-1 px-3 focus:outline-none hover:bg-button rounded mt-4 md:mt-0">
           Login

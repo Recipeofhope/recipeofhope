@@ -3,6 +3,7 @@ const knex = require('../../data/db');
 module.exports = {
   getMeals: async function(decodedUser, res) {
     try {
+
       if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
       else if (decodedUser.user_type != 'Patient')
         res
@@ -117,6 +118,7 @@ module.exports = {
     }
   },
 
+
   bookMeals: async function(decodedUser, requestBody, res) {
     try {
       if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
@@ -136,6 +138,7 @@ module.exports = {
         tomorrow.setDate(tomorrow.getUTCDate() + 1);
 
         await knex.transaction(async (tr) => {
+
           let success = 0;
           let totalMeals = 0;
 
@@ -155,8 +158,10 @@ module.exports = {
 
             // Updating patient ID to user ID for the number of meals sent by the patient for each cook selected.
 
+
             for (let j = 0; j < requestBody[i].number_of_meals; j++) {
               var result = await tr('meal')
+
                 .update({ patient_id: decodedUser.id })
                 .where('meal.id', '=', resultMeals[j].id);
             }
@@ -169,6 +174,7 @@ module.exports = {
             res.status(200).json({ message: 'Success! All meals booked.' });
           //return Json('Success! All meals booked.');
           else if (success > 0 && success < totalMeals)
+
             res.status(200).json({
               message:
                 'Some meals booked successfully. Please check which cook/ meals were booked and try again.',

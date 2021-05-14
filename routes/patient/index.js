@@ -1,3 +1,4 @@
+
 const { 
   getMeals,
   bookMeals 
@@ -12,6 +13,7 @@ router.get('/get-meals', function(req, res) {
 router.put('/book-meals', function(req, res) {
   console.log('reached patient/book-meals');
   return bookMeals(req.decodedUser, req.body, res)
+
 });
 
 router.post('/cancel-meal/:id', function(req, res) {

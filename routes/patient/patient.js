@@ -3,15 +3,16 @@ const { v4: uuidv4 } = require('uuid');
 const { JsonWebTokenError } = require('jsonwebtoken');
 
 
+
 module.exports = {
   getMeals: async function (decodedUser, res) {
     try {
+
       if (!decodedUser)
         res.status(400).json({ message: 'Invalid user' })
 
       else if (decodedUser.user_type != 'Patient')
         res.status(400).json({ message: 'User type is not allowed to book meal' })
-
       else {
         const today = new Date();
         const tomorrow = new Date();
@@ -50,7 +51,6 @@ module.exports = {
           .where('user.user_type', '=', 'Cook');
 
         let resultCooks = await getCooksQuery;
-
 
         //Final list of available meals from cooks.
         if (!resultCooks || resultCooks.length == 0) {
@@ -114,10 +114,7 @@ module.exports = {
         res.status(200).json(resultMeals);
       }
     }
-    catch (error) {
-      res.status(400).json({ message: error.message });
-    }
-  },
+
 
   bookMeals: async function (decodedUser, requestBody, res) {
     try {

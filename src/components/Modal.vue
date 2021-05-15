@@ -53,41 +53,42 @@
               Sign-up
             </h3>
             <div class="mt-2">
-              <Field label="Full Name" type="text" :value="fullname"></Field>
+              <Field label="Username" type="text" v-model="username"></Field>
               <Field
                 label="Phone Number"
                 type="tel"
-                :value="phoneNumber"
+                v-model="phoneNumber"
               ></Field>
-              <Field label="Username" type="text"></Field>
-              <Field label="Password" type="password"></Field>
-              <Field label="Address Line 1" type="text"></Field>
-              <Field label="Address Line 2" type="text"></Field>
+              <Field label="First Name" type="text" v-model='firstName' ></Field>
+              <Field label="Last Name" type="text" v-model="lastName"></Field>
+              <Field label="Password" type="password" v-model="password"></Field>
+              <Field label="Address Line 1" type="text" v-model="address1"></Field>
+              <Field label="Address Line 2" type="text" v-model="address2"></Field>
               <div class="relative mb-4">
                 <label for="location" class="leading-7 text-sm text-primary"
                   >Select Locality</label
                 >
-                <select
+                <select  @change="onChangeLocality($event)"
                   id="location"
                   name="location"
                   class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                 >
-                  <option>BTM</option>
-                  <option selected>JP Nagar</option>
-                  <option>Koramangala</option>
+                  <option value="BTM">BTM Layout</option>
+                  <option value="JP Nagar">JP Nagar</option>
+                  <option value="Kormangala">Koramangala</option>
                 </select>
               </div>
               <div class="relative mb-4">
                 <label for="usertype" class="leading-7 text-sm text-primary"
                   >Sign Up As</label
                 >
-                <select
+                <select @change="onChangeUserType($event)"
                   id="usertype"
                   name="location"
                   class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                 >
-                  <option>Volunteer Cook</option>
-                  <option selected>Recipient</option>
+                  <option>Cook</option>
+                  <option>Recipient</option>
                 </select>
               </div>
             </div>
@@ -104,7 +105,7 @@
           <button
             type="button"
             class="inline-flex justify-center w-2/5 rounded-md border border-transparent shadow-sm px-4 py-2 bg-button text-base font-medium text-white hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
-            @click="signUp"
+            @click="register"
           >
             Submit
           </button>
@@ -114,17 +115,56 @@
   </div>
 </template>
 <script>
+import {  mapActions } from 'vuex';
 import Field from "@/components/Field.vue";
 import axios from "axios";
 
 export default {
-  props: ["fullname", "phoneNumber"],
+  props: ["fullname","username", "phoneNumber", "firstName", "lastName", 'password', 'address1', 'address2'],
   components: {
     Field
   },
+  data() {
+    return {
+      locality: 'BTM Layout',
+      userType: 'Cook'
+    }
+  },
   methods: {
+    ...mapActions(["registerUser"]),
     closeModal() {
       this.$emit("CloseModal", true);
+    },
+
+    register() {
+      const obj = {
+        first_name: this.firstName,
+        last_name: this.lastName,
+        username: this.username,
+        approved: false,
+        password: this.password,
+        phone_number: this.phoneNumber,
+        user_type: this.userType,
+        address: {
+          first_line: this.address1,
+          second_line: this.address2,
+          locality: this.locality,
+          zipcode: '560076',
+          state: 'Karnataka',
+          city: 'Bengaluru'
+        }
+      }
+      console.log('obj', obj);
+      this.registerUser(obj);
+      // Make userDetails call and push him to relavant user_type route.
+      this.closeModal();
+    },
+
+    onChangeUserType(e) {
+      this.userType = e.target.options[e.target.options.selectedIndex].innerText;
+    },
+    onChangeLocality(e) {
+      this.locality = e.target.options[e.target.options.selectedIndex].innerText;
     },
     async signUp() {
       try {

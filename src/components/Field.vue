@@ -9,7 +9,9 @@ export default {
   props: ['label', 'type', 'value', 'name'],
   methods: {
     alertParent(val) {
-      this.$emit(`update:value`, val)
+      this.$emit(`input`, val)
+      // this.$emit(`update:value`, val)
+      // this.$emit('onChange', val);
     }
   }
 

@@ -307,19 +307,22 @@ function getReturnObj(result) {
   if (!result || typeof result === 'undefined' || result.length == 0) {
     throw new Error('Error while fetching user details.');
   }
-  returnObj.first_name = result[0].first_name;
-  returnObj.last_name = result[0].last_name;
-  returnObj.username = result[0].username;
-  returnObj.approved = result[0].approved;
-  returnObj.user_type = result[0].user_type;
-  returnObj.address_first_line = result[0].address_first_line;
-  returnObj.address_second_line = result[0].address_second_line;
-  returnObj.address_building_name = result[0].address_building_name;
-  returnObj.address_house_number = result[0].address_house_number;
-  returnObj.address_zipcode = result[0].address_zipcode;
-  returnObj.address_state = result[0].address_state;
-  returnObj.address_city = result[0].address_city;
-  returnObj.address_locality = result[0].address_locality;
+  returnObj.user = {};
+  returnObj.user.first_name = result[0].first_name;
+  returnObj.user.last_name = result[0].last_name;
+  returnObj.user.username = result[0].username;
+  returnObj.user.approved = result[0].approved;
+  returnObj.user.user_type = result[0].user_type;
+
+  returnObj.address = {};
+  returnObj.address.first_line = result[0].address_first_line;
+  returnObj.address.second_line = result[0].address_second_line;
+  returnObj.address.building_name = result[0].address_building_name;
+  returnObj.address.house_number = result[0].address_house_number;
+  returnObj.address.zipcode = result[0].address_zipcode;
+  returnObj.address.state = result[0].address_state;
+  returnObj.address.city = result[0].address_city;
+  returnObj.address.locality = result[0].address_locality;
   returnObj.meals = {};
   for (const mealObj of result) {
     const meal = {};

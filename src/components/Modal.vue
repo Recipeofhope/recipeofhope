@@ -53,28 +53,43 @@
               Sign-up
             </h3>
             <div class="mt-2">
-              <Field label="Full Name" type="text"></Field>
-              <Field label="Phone Number" type="tel"></Field>
+              <Field label="Full Name" type="text" :value="fullname"></Field>
+              <Field
+                label="Phone Number"
+                type="tel"
+                :value="phoneNumber"
+              ></Field>
               <Field label="Username" type="text"></Field>
               <Field label="Password" type="password"></Field>
               <Field label="Address Line 1" type="text"></Field>
               <Field label="Address Line 2" type="text"></Field>
               <div class="relative mb-4">
-                <label for="location" class="leading-7 text-sm text-primary">Select Locality</label>
-                <select id="location" name="location" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                <label for="location" class="leading-7 text-sm text-primary"
+                  >Select Locality</label
+                >
+                <select
+                  id="location"
+                  name="location"
+                  class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                >
                   <option>BTM</option>
                   <option selected>JP Nagar</option>
                   <option>Koramangala</option>
                 </select>
               </div>
               <div class="relative mb-4">
-                <label for="usertype" class="leading-7 text-sm text-primary">Sign Up As</label>
-                <select id="usertype" name="location" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+                <label for="usertype" class="leading-7 text-sm text-primary"
+                  >Sign Up As</label
+                >
+                <select
+                  id="usertype"
+                  name="location"
+                  class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
+                >
                   <option>Volunteer Cook</option>
                   <option selected>Recipient</option>
                 </select>
               </div>
-
             </div>
           </div>
         </div>
@@ -89,6 +104,7 @@
           <button
             type="button"
             class="inline-flex justify-center w-2/5 rounded-md border border-transparent shadow-sm px-4 py-2 bg-button text-base font-medium text-white hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:text-sm"
+            @click="signUp"
           >
             Submit
           </button>
@@ -98,15 +114,43 @@
   </div>
 </template>
 <script>
-import Field from '@/components/Field.vue';
+import Field from "@/components/Field.vue";
+import axios from "axios";
+
 export default {
+  props: ["fullname", "phoneNumber"],
   components: {
-    Field,
+    Field
   },
   methods: {
     closeModal() {
-      this.$emit('CloseModal', true);
+      this.$emit("CloseModal", true);
+    },
+    async signUp() {
+      try {
+        const response = await axios.post("http://localhost:3000/user", {
+          first_name: "Tarun",
+          last_name: "Pai",
+          username: "tpai4",
+          approved: false,
+          password: "password",
+          phone_number: "9876543210",
+          user_type: "Cook",
+          address: {
+            first_line: "101, AB Residency",
+            second_line: "12th Cross, 13th A Main",
+            locality: "Jayanagar",
+            zipcode: '560076',
+            state: 'Karnataka',
+            city: 'Bengaluru'
+          }
+        });
+        this.$router.push('/cook');
+        console.log({ response })
+      } catch (error) {
+        console.log({ error })
+      }
     }
   }
-}
+};
 </script>

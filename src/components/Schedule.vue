@@ -2,7 +2,7 @@
   <!-- This example requires Tailwind CSS v2.0+ -->
   <div>
     <SectionHeading headingTxt="Your Schedule"></SectionHeading>
-    <Sch />
+    <Sch :today="todayCount" :tomorrow="tomorrowCount" />
     <SectionHeading class="mt-20" headingTxt="Pick your meal slots" buttonTxt="Confirm Slots"></SectionHeading>
     <div class="flex flex-col py-10">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
@@ -47,27 +47,6 @@
                     <input class="text-center py-4 border" type="text" name="" id="" value="1">
                   </td>
                 </tr>
-
-                <!-- Even row -->
-                <!-- <tr class="bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Cody Fisher
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Product Directives Officer
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    cody.fisher@example.com
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Owner
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="#" class="text-indigo-600 hover:text-indigo-900">Edit</a>
-                  </td>
-                </tr> -->
-
-                <!-- More people... -->
               </tbody>
             </table>
           </div>
@@ -83,9 +62,18 @@ import SectionHeading from '@/components/SectionHeading.vue';
 import Sch from '@/components/Sch.vue';
 
 export default {
+  props: ['plan'],
   components: {
     SectionHeading,
     Sch
+  },
+  computed: {
+    todayCount() {
+      return this?.plan?.today?.length
+    },
+    tomorrowCount() {
+      return this?.plan?.tomorrow?.length
+    }
   }
 }
 </script>

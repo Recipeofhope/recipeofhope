@@ -3,7 +3,7 @@
     <ul class="mt-3 grid grid-cols-1 gap-5 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4">
       <li class="col-span-1 flex shadow-sm rounded-md">
         <div class="flex-shrink-0 flex items-center justify-center w-16 bg-pink-600 text-white text-lg font-medium rounded-l-md">
-          5
+          {{ today }}
         </div>
         <div class="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
           <div class="flex-1 px-4 py-2 text-lg truncate">
@@ -24,7 +24,7 @@
 
       <li class="col-span-1 flex shadow-sm rounded-md">
         <div class="flex-shrink-0 flex items-center justify-center w-16 bg-purple-600 text-white text-lg font-medium rounded-l-md">
-          3
+          {{ tomorrow }}
         </div>
         <div class="flex-1 flex items-center justify-between border-t border-r border-b border-gray-200 bg-white rounded-r-md truncate">
           <div class="flex-1 px-4 py-2 text-lg truncate">
@@ -36,3 +36,8 @@
     </ul>
   </div>
 </template>
+<script>
+export default {
+  props: ['today', 'tomorrow']
+}
+</script>

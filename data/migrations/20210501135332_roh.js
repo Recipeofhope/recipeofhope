@@ -1,3 +1,4 @@
+// eslint-disable-next-line no-unused-vars
 exports.up = function(knex, Promise) {
   return knex.schema
     .createTableIfNotExists('user', function(table) {
@@ -100,6 +101,7 @@ exports.up = function(knex, Promise) {
     });
 };
 
+// eslint-disable-next-line no-unused-vars
 exports.down = function(knex, Promise) {
   return knex.schema
     .dropTableIfExists('service_areas')

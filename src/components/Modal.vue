@@ -128,7 +128,7 @@ export default {
     },
     async signUp() {
       try {
-        const response = await axios.post("http://localhost:3000/user", {
+        const response = await axios.post("api/user", {
           first_name: "Tarun",
           last_name: "Pai",
           username: "tpai4",
@@ -139,7 +139,7 @@ export default {
           address: {
             first_line: "101, AB Residency",
             second_line: "12th Cross, 13th A Main",
-            locality: "Jayanagar",
+            locality: "BTM Layout",
             zipcode: '560076',
             state: 'Karnataka',
             city: 'Bengaluru'

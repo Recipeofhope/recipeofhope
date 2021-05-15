@@ -1,7 +1,7 @@
 const express = require('express');
 const app = express();
 const path = require('path');
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
 const cors = require('cors');
@@ -12,13 +12,11 @@ app.use(express.json());
 app.use(cors());
 app.use(express.static('dist'));
 
-app.use(require('./middleware/authorization-filter'))
+app.use(require('./middleware/authorization-filter'));
 app.use('/user', require('./routes/user'));
 app.use('/cook', require('./routes/cook'));
 app.use('/patient', require('./routes/patient'));
 app.use('/admin', require('./routes/admin'));
-
-
 
 const options = {
   definition: {
@@ -38,9 +36,7 @@ const options = {
       },
     ],
   },
-  apis: [
-    './routes/*/*.js',
-  ],
+  apis: ['./routes/*/*.js'],
 };
 
 const specs = swaggerJsdoc(options);

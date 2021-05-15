@@ -7,12 +7,12 @@
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Sign Up</h2>
-        <Field label="Full Name" type="text"></Field>
-        <Field label="Phone Number" type="tel"></Field>
+        <Field label="Full Name" name="fullname" type="text" :value.sync="fullname"></Field>
+        <Field label="Phone Number" name="phoneNumber" type="tel" :value.sync="phoneNumber"></Field>
         <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10" @click="continueSignup()">Sign Up</button>
       </div>
     </div>
-    <Modal v-show="signup" @CloseModal="closeModal()" />
+    <Modal v-show="signup" @CloseModal="closeModal()" :fullname="fullname" :phoneNumber="phoneNumber" />
   </section>
 </template>
 <script>
@@ -22,7 +22,9 @@ import Modal from '@/components/Modal.vue';
 export default {
   data() {
     return {
-      signup: false
+      signup: false,
+      fullname: '',
+      phoneNumber: ''
     }
   },
   components: {
@@ -31,10 +33,10 @@ export default {
   },
   methods: {
     continueSignup() {
-      this.signup = true;
+      this.signup = true
     },
     closeModal() {
-      this.signup = false;
+      this.signup = false
     }
   }
 }

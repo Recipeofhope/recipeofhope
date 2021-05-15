@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div v-if="details">
     <!-- This example requires Tailwind CSS v2.0+ -->
     <div class="mb-10 py-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between">
       <h3 class="text-lg leading-6 font-medium text-gray-900">
@@ -32,7 +32,7 @@
               Full name
             </dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              Ricardo Cooper
+              {{ name }}
             </dd>
           </div>
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -45,10 +45,10 @@
           </div>
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
             <dt class="text-sm font-medium text-gray-500">
-              Email address
+              Phone Number
             </dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              mitidesai@example.com
+              {{ details.phone_number }}
             </dd>
           </div>
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -56,15 +56,18 @@
               Address
             </dt>
             <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
-              #1500, Trupti Apartments, <br>
-              10th A Main, 12th Cross, <br>
-              Jayanagar 7th Block, <br>
-              Bangalore, 560076
+              {{ details.address_line_1 }} <br>
+              {{ details.address_line_2 }} <br>
+              {{ details.city }}, {{ details.zipcode }} <br>
             </dd>
           </div>
         </dl>
       </div>
     </div>
-
   </div>
 </template>
+<script>
+export default {
+  props: ['name', 'details']
+}
+</script>

@@ -11,10 +11,10 @@
                     Name
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Title
+                    Address
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Email
+                    Phone Number
                   </th>
                   <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Role
@@ -26,9 +26,9 @@
               </thead>
               <tbody>
                 <!-- Odd row -->
-                <tr class="bg-white">
+                <tr :class="cook.id % 2 ? 'bg-gray-50' : 'bg-white'" v-for="cook in cooks" :key="cook.id">
                   <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Jane Cooper
+                    {{ cook.name }}
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     Regional Paradigm Technician
@@ -43,27 +43,6 @@
                     <a href="#" class="text-indigo-600 hover:text-indigo-900">Approve</a>
                   </td>
                 </tr>
-
-                <!-- Even row -->
-                <tr class="bg-gray-50">
-                  <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    Cody Fisher
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Product Directives Officer
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    cody.fisher@example.com
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    Owner
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="#" class="text-indigo-600 hover:text-indigo-900">Approve</a>
-                  </td>
-                </tr>
-
-                <!-- More people... -->
               </tbody>
             </table>
           </div>
@@ -73,10 +52,26 @@
   </div>
 </template>
 <script>
+import axios from 'axios'
+
 export default {
   data() {
     return {
-      title: "This is an admin page."
+      title: "This is an admin page.",
+      cooks: []
+    }
+  },
+  mounted() {
+    this.getCooks();
+  },
+  methods: {
+    async getCooks() {
+      try {
+        const { data } = await axios.get(`https://609e8e8133eed80017958cad.mockapi.io/cook`);
+        this.cooks = data;
+      } catch (error) {
+        console.log({ error })
+      }
     }
   }
 }

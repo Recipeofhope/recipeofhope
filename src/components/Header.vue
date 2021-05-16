@@ -28,6 +28,7 @@
 import Modal from '@/components/Modal.vue';
 import {  mapGetters } from 'vuex';
 import _get from 'lodash/get';
+import { getStoredUser } from '../utils/app.utils';
 
 export default {
   data() {
@@ -41,10 +42,12 @@ export default {
   computed: {
     ...mapGetters(['user']),
     userType: function() {
-      return _get(this.user, 'user.user_type', null);
+      const user = _get(this.user, 'user');
+      return _get(user || getStoredUser(), 'user_type', null);
     },
     firstName: function() {
-      return _get(this.user, 'user.first_name', '');
+      const user = _get(this.user, 'user');
+      return _get(user || getStoredUser(), 'first_name', null);
     }
   }, 
   methods: {

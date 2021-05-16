@@ -86,7 +86,7 @@ router.beforeEach((to, from, next) => {
   const path = _get(to, 'path');
   if(_includes(PROTECTED_ROUTES, path)) {
     if(isAuthenticated()) {
-      const userType = _get(getStoredUser(), 'user_type', '');
+      const userType = _get(getStoredUser(), 'user.user_type', '');
       const validPath = _get(USER_TYPE_ROUTE_MAP, userType);
       if(path !== validPath) {
         next({path: validPath});

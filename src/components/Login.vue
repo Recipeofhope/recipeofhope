@@ -20,6 +20,7 @@
 import Field from '@/components/Field.vue';
 import Toast from '@/components/Toast'
 import {  mapActions, mapGetters } from 'vuex';
+import { USER_TYPE_ROUTE_MAP } from '../constants/app.constants';
 
 export default {
   data() {
@@ -37,13 +38,11 @@ export default {
   
   watch: {
     tokens(newTokens) {
-      const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
-
       if(newTokens.accessToken) {
         Toast.success('Login successful!');
         const { user } = this.user;
         if(user.user_type) {
-          const routeTo = USER_TYPE_TO_PATH[user.user_type];
+          const routeTo = USER_TYPE_ROUTE_MAP[user.user_type]
           this.$router.push(routeTo);
         }
       }

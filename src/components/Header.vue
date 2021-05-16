@@ -13,15 +13,38 @@
           <router-link class="mr-5 hover:text-gray-900" to="/recipient">Recipients</router-link>
           <router-link class="mr-5 hover:text-gray-900" to="/admin">Admin</router-link>
         </nav>
-        <button class="inline-flex items-center text-white bg-button border-0 py-1 px-3 focus:outline-none hover:bg-button rounded mt-4 md:mt-0">
-          Login
+        <button class="inline-flex items-center text-white bg-button border-0 py-1 px-3 focus:outline-none hover:bg-button rounded mt-4 md:mt-0" @click="continueSignUp()">
+          Sign Up
           <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-1" viewBox="0 0 24 24">
               <path d="M5 12h14M12 5l7 7-7 7"></path>
           </svg>
         </button>
+        <Modal v-show="signup" @CloseModal="closeModal()" />
       </div>
   </header>
 </template>
+<script>
+import Modal from '@/components/Modal.vue';
+
+export default {
+  data() {
+    return {
+      signup: false,
+    }
+  },
+  components: {
+    Modal,
+  },
+  methods: {
+    continueSignUp() {
+      this.signup = true
+    },
+    closeModal() {
+      this.signup = false
+    }
+  }
+}
+</script>
 <style scoped>
 .logo {
   width: 60px;

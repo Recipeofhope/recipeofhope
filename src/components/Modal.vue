@@ -117,7 +117,7 @@
 <script>
 import {  mapActions } from 'vuex';
 import Field from "@/components/Field.vue";
-import axios from "axios";
+// import axios from "axios";
 
 export default {
   props: ["fullname","username", "phoneNumber", "firstName", "lastName", 'password', 'address1', 'address2'],
@@ -156,7 +156,6 @@ export default {
       }
       console.log('obj', obj);
       this.registerUser(obj);
-      // Make userDetails call and push him to relavant user_type route.
       this.closeModal();
     },
 
@@ -166,7 +165,7 @@ export default {
     onChangeLocality(e) {
       this.locality = e.target.options[e.target.options.selectedIndex].innerText;
     },
-    async signUp() {
+   /*  async signUp() {
       try {
         const response = await axios.post("api/user", {
           first_name: "Tarun",
@@ -190,7 +189,7 @@ export default {
       } catch (error) {
         console.log({ error })
       }
-    }
+    } */
   }
 };
 </script>

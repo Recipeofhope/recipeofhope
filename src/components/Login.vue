@@ -6,18 +6,19 @@
       <p class="leading-relaxed mt-4 text-secondary">Spreading Hope, One Meal at a Time.</p>
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
-        <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Sign Up</h2>
-        <Field label="Full Name" name="fullname" type="text" :value.sync="fullname"></Field>
-        <Field label="Phone Number" name="phoneNumber" type="tel" :value.sync="phoneNumber"></Field>
-        <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10" @click="continueSignup()">Sign Up</button>
+        <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Login</h2>
+        <Field label="Username" name="username" type="text" :value.sync="username"></Field>
+        <Field label="Password" name="password" type="password" :value.sync="password"></Field>
+        <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10" @click="continueLogin()">Login</button>
       </div>
     </div>
-    <Modal v-show="signup" @CloseModal="closeModal()" :fullname="fullname" :phoneNumber="phoneNumber" />
+    <!-- <Modal v-show="signup" @CloseModal="closeModal()" :fullname="fullname" :phoneNumber="phoneNumber" /> -->
   </section>
 </template>
 <script>
 import Field from '@/components/Field.vue';
-import Modal from '@/components/Modal.vue';
+import Toast from '@/components/Toast'
+// import Modal from '@/components/Modal.vue';
 
 export default {
   data() {
@@ -28,16 +29,16 @@ export default {
     }
   },
   components: {
-    Modal,
+    // Modal,
     Field
   },
   methods: {
-    continueSignup() {
-      this.signup = true
+    continueLogin() {
+      Toast.open('Write login logic here')
     },
-    closeModal() {
-      this.signup = false
-    }
+    // closeModal() {
+    //   this.signup = false
+    // }
   }
 }
 </script>

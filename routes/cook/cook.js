@@ -103,18 +103,10 @@ module.exports = {
       // Consolidate the patients with the no. of meals each one has ordered from the current cook.
       const patientsToNumMeals = {};
       for (const patient of updateResult) {
-        console.log(
-          'patientsToNumMeals before update: ' +
-            util.inspect(patientsToNumMeals, { showHidden: false, depth: null })
-        );
         if (!(patient.patient_id in patientsToNumMeals)) {
           patientsToNumMeals[patient.patient_id] = 0;
         }
         patientsToNumMeals[patient.patient_id]++;
-        console.log(
-          'patientsToNumMeals after update: ' +
-            util.inspect(patientsToNumMeals, { showHidden: false, depth: null })
-        );
       }
 
       const allPatientDetails = {};
@@ -209,52 +201,6 @@ async function sendPatientWhatsapp(
         '\n \nThe cook has prepared the *' +
         numMeals +
         '* meal(s) you requested. Please set up Dunzo/Swiggy Genie to get your food picked up.\n \nHappy eating and get well soon!\nRecipe of Hope Team',
-      to: 'whatsapp:+91' + patientDetails.phone_number,
-    },
-    function(error, message) {
-      if (error) {
-        client.messages.create({
-          from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
-          body:
-            'Hi, there was an error sending a patient details about their meal.' +
-            '\n \nThe patient details are:\nName: ' +
-            patientDetails.first_name +
-            ' ' +
-            patientDetails.last_name +
-            '\nPhone number: ' +
-            patientDetails.phone_number +
-            '\n\n The cook details are:\nName: ' +
-            decodedUser.first_name +
-            ' ' +
-            decodedUser.last_name +
-            '\nPhone number: ' +
-            decodedUser.phone_number +
-            '\n\n Please contact the cook/patient for further action.',
-          to: 'whatsapp:+91' + process.env.WHATSAPP_ADMIN_NUMBER,
-        });
-      }
-    }
-  );
-  // .then((message) => console.log(message.sid))
-  // .error(() => {
-  //   client.messages.create({
-  //     from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
-  //     body:
-  //       'Hi, there was an error sending a patient details about their meal.' +
-  //       '\n \nThe patient details are:\nName: ' +
-  //       patientDetails.first_name +
-  //       ' ' +
-  //       patientDetails.last_name +
-  //       '\nPhone number: ' +
-  //       patientDetails.phone_number +
-  //       '\n\n The cook details are:\nName: ' +
-  //       decodedUser.first_name +
-  //       ' ' +
-  //       decodedUser.last_name +
-  //       '\nPhone number: ' +
-  //       decodedUser.phone_number +
-  //       '\n\n Please contact the cook/patient for further action.',
-  //     to: 'whatsapp:+91' + process.env.WHATSAPP_ADMIN_NUMBER,
-  //   });
-  // });
+      to: 'whatsapp:+91' + patientDetails.phone_number
+    }.then((message) => console.log(message.sid)));
 }

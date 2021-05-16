@@ -22,7 +22,7 @@ const getDefaultHeaders = () => {
 
 const getters = {
   user: (state) => state.user,
-  address: (state) => state.address,
+  // address: (state) => state.address,
   tokens: (state) => state.tokens,
 };
 
@@ -30,7 +30,7 @@ const actions = {
   async registerUser({ commit }, payload) {
     try {
       const response = await axios.post('api/user', payload);
-      commit('setRegisteredUser', response.data);
+      commit('setLoginAndRegisteredUser', response.data);
     } catch (error) {
       Toast.error(error);
     }
@@ -39,7 +39,7 @@ const actions = {
   async loginUser({ commit }, payload) {
     try {
       const response = await axios.post('api/user/login', payload);
-      commit('setLoginUser', response?.data);
+      commit('setLoginAndRegisteredUser', response?.data);
     } catch (error) {
       Toast.error(error);
     }
@@ -56,17 +56,19 @@ const actions = {
 };
 
 const mutations = {
-  setRegisteredUser: (state, data) => {
+  setLoginAndRegisteredUser: (state, data) => {
+    console.log('data in mutation ', data);
     state.user = {
-      ..._get(data, 'user', EMPTY_OBJECT),
+      user: _get(data, 'user', EMPTY_OBJECT),
       address: _get(data, 'address', EMPTY_OBJECT),
+      meals: _get(data, 'meals', EMPTY_OBJECT),
     };
     state.tokens = {
-      accessToken: _get(data, 'accessToken', EMPTY_STRING),
-      refreshToken: _get(data, 'refreshToken', EMPTY_STRING),
+      accessToken: _get(data, 'access_token', EMPTY_STRING),
+      refreshToken: _get(data, 'refresh_token', EMPTY_STRING),
     };
   },
-  setLoginUser: (state, tokens) => (state.tokens = tokens),
+  // setLoginUser: (state, tokens) => (state.tokens = tokens),
   setUser: (state, user) => (state.user = user),
 };
 

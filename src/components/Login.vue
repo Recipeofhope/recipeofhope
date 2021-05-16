@@ -34,16 +34,20 @@ export default {
     // Modal,
     Field
   },
-  computed: mapGetters(['tokens']),
+  computed: mapGetters(['tokens', 'user']),
   
   watch: {
-    tokens(newTokens, oldTokens) {
-      console.log('newToken ', newTokens.access_token);
-      if(newTokens.access_token) {
+    tokens(newTokens) {
+      const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
+
+      if(newTokens.accessToken) {
         Toast.success('Login successful!');
-        // this.$router.push('/cook');
+        const { user } = this.user;
+        if(user.user_type) {
+          const routeTo = USER_TYPE_TO_PATH[user.user_type];
+          this.$router.push(routeTo);
+        }
       }
-      console.log('oldTokens', oldTokens);
     },
     // Method 2. 
     /*     
@@ -55,14 +59,10 @@ export default {
   methods: {
     ...mapActions(["loginUser"]),
 
-     handleLogin(response) {
-      console.log('response ', response);
-    },
-
     continueLogin() {
       const payload = {username: this.username, password: this.password};
       console.log('payload ', payload);
-      this.loginUser(payload, this.handleLogin);
+      this.loginUser(payload);
     },
   },
   updated() {

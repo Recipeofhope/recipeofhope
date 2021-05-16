@@ -136,9 +136,8 @@ export default {
         const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
         console.log('newUser', newUser);
         if(newUser.user_type) {
-        const routeTo = USER_TYPE_TO_PATH[newUser.user_type];
-        this.$router.push(routeTo);
-
+          const routeTo = USER_TYPE_TO_PATH[newUser.user_type];
+          this.$router.push(routeTo);
         }
       }
   },

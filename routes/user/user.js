@@ -7,45 +7,7 @@ const refreshTokens = {};
 module.exports = {
   getUser: async function(user, res) {
     try {
-      let getDetailsQuery = knex
-        .select(
-          'user.id',
-          'user.first_name',
-          'user.last_name',
-          'user.username',
-          'user.approved',
-          'user.user_type',
-          'meal.ready as meal_ready',
-          'meal.scheduled_for as meal_scheduled_for',
-          'meal.delivered as meal_delivered',
-          'address.first_line AS address_first_line',
-          'address.second_line AS address_second_line',
-          'address.building_name AS address_building_name',
-          'address.house_number AS address_house_number',
-          'address.zipcode AS address_zipcode',
-          'address.state AS address_state',
-          'address.city AS address_city',
-          'locality.name AS address_locality'
-        )
-        .from('user');
-      if (user.user_type === 'Cook') {
-        getDetailsQuery = getDetailsQuery.leftJoin(
-          'meal',
-          'meal.cook_id',
-          'user.id'
-        );
-      } else if (user.user_type === 'Patient') {
-        getDetailsQuery = getDetailsQuery.leftJoin(
-          'meal',
-          'meal.patient_id',
-          'user.id'
-        );
-      }
-      let result = await getDetailsQuery
-        .leftJoin('address', 'address.user_id', 'user.id')
-        .leftJoin('locality', 'address.locality_id', 'locality.id')
-        .where('user.id', '=', user.id);
-      const returnObj = getReturnObj(result);
+      const returnObj = await getUserDetails(user);
       res.status(200).json(returnObj);
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -100,10 +62,14 @@ module.exports = {
           }
         );
         refreshTokens[refreshToken] = user.username;
+        const returnObj = await getUserDetails(dbUser);
         res.json({
           auth: true,
           access_token: accessToken,
           refresh_token: refreshToken,
+          user: returnObj.user,
+          address: returnObj.address,
+          meals: returnObj.meals,
         });
       } else {
         res.status(400).json({ auth: false, message: 'Invalid Credentials' });
@@ -297,6 +263,49 @@ module.exports = {
   },
 };
 
+async function getUserDetails(user) {
+  let getDetailsQuery = knex
+    .select(
+      'user.id',
+      'user.first_name',
+      'user.last_name',
+      'user.username',
+      'user.approved',
+      'user.user_type',
+      'meal.ready as meal_ready',
+      'meal.scheduled_for as meal_scheduled_for',
+      'meal.delivered as meal_delivered',
+      'address.first_line AS address_first_line',
+      'address.second_line AS address_second_line',
+      'address.building_name AS address_building_name',
+      'address.house_number AS address_house_number',
+      'address.zipcode AS address_zipcode',
+      'address.state AS address_state',
+      'address.city AS address_city',
+      'locality.name AS address_locality'
+    )
+    .from('user');
+  if (user.user_type === 'Cook') {
+    getDetailsQuery = getDetailsQuery.leftJoin(
+      'meal',
+      'meal.cook_id',
+      'user.id'
+    );
+  } else if (user.user_type === 'Patient') {
+    getDetailsQuery = getDetailsQuery.leftJoin(
+      'meal',
+      'meal.patient_id',
+      'user.id'
+    );
+  }
+  let result = await getDetailsQuery
+    .leftJoin('address', 'address.user_id', 'user.id')
+    .leftJoin('locality', 'address.locality_id', 'locality.id')
+    .where('user.id', '=', user.id);
+  const returnObj = getReturnObj(result);
+  return returnObj;
+}
+
 async function authenticateUser(userPassword, dbUserPassword) {
   const match = await bcrypt.compare(userPassword, dbUserPassword);
   return match;
@@ -307,19 +316,22 @@ function getReturnObj(result) {
   if (!result || typeof result === 'undefined' || result.length == 0) {
     throw new Error('Error while fetching user details.');
   }
-  returnObj.first_name = result[0].first_name;
-  returnObj.last_name = result[0].last_name;
-  returnObj.username = result[0].username;
-  returnObj.approved = result[0].approved;
-  returnObj.user_type = result[0].user_type;
-  returnObj.address_first_line = result[0].address_first_line;
-  returnObj.address_second_line = result[0].address_second_line;
-  returnObj.address_building_name = result[0].address_building_name;
-  returnObj.address_house_number = result[0].address_house_number;
-  returnObj.address_zipcode = result[0].address_zipcode;
-  returnObj.address_state = result[0].address_state;
-  returnObj.address_city = result[0].address_city;
-  returnObj.address_locality = result[0].address_locality;
+  returnObj.user = {};
+  returnObj.user.first_name = result[0].first_name;
+  returnObj.user.last_name = result[0].last_name;
+  returnObj.user.username = result[0].username;
+  returnObj.user.approved = result[0].approved;
+  returnObj.user.user_type = result[0].user_type;
+
+  returnObj.address = {};
+  returnObj.address.first_line = result[0].address_first_line;
+  returnObj.address.second_line = result[0].address_second_line;
+  returnObj.address.building_name = result[0].address_building_name;
+  returnObj.address.house_number = result[0].address_house_number;
+  returnObj.address.zipcode = result[0].address_zipcode;
+  returnObj.address.state = result[0].address_state;
+  returnObj.address.city = result[0].address_city;
+  returnObj.address.locality = result[0].address_locality;
   returnObj.meals = {};
   for (const mealObj of result) {
     const meal = {};

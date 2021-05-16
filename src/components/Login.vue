@@ -60,7 +60,6 @@ export default {
 
     continueLogin() {
       const payload = {username: this.username, password: this.password};
-      console.log('payload ', payload);
       this.loginUser(payload);
     },
   },

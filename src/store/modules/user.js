@@ -1,6 +1,7 @@
 import axios from 'axios';
 import _get from 'lodash/get';
 import Toast from '@/components/Toast';
+import { ACCESS_TOKEN, USER_KEY, REFRESH_TOKEN } from '../../constants/app.constants';
 
 const EMPTY_STRING = '';
 // const EMPTY_ARRAY = [];
@@ -57,7 +58,6 @@ const actions = {
 
 const mutations = {
   setLoginAndRegisteredUser: (state, data) => {
-    console.log('data in mutation ', data);
     state.user = {
       user: _get(data, 'user', EMPTY_OBJECT),
       address: _get(data, 'address', EMPTY_OBJECT),
@@ -67,8 +67,10 @@ const mutations = {
       accessToken: _get(data, 'access_token', EMPTY_STRING),
       refreshToken: _get(data, 'refresh_token', EMPTY_STRING),
     };
+    localStorage.setItem(USER_KEY, JSON.stringify(_get(data, 'user')));
+    localStorage.setItem(ACCESS_TOKEN, _get(data, ACCESS_TOKEN))
+    localStorage.setItem(REFRESH_TOKEN, _get(data, REFRESH_TOKEN))
   },
-  // setLoginUser: (state, tokens) => (state.tokens = tokens),
   setUser: (state, user) => (state.user = user),
 };
 

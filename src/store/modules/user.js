@@ -16,14 +16,14 @@ const state = {
 const getDefaultHeaders = () => {
   return {
     headers: {
-      'x-access-token': _get(state, 'tokens.access_token', EMPTY_STRING),
+      'x-access-token': _get(state, 'tokens.access_token') || localStorage.getItem(ACCESS_TOKEN),
     },
   };
 };
 
 const getters = {
   user: (state) => state.user,
-  // address: (state) => state.address,
+  address: (state) => state.address,
   tokens: (state) => state.tokens,
 };
 
@@ -46,10 +46,9 @@ const actions = {
     }
   },
 
-  async fetchUserDetails({ commit }, payload) {
-    const response = await axios.post(
+  async fetchUserDetails({ commit }) {
+    const response = await axios.get(
       'api/user/user-details',
-      payload,
       getDefaultHeaders()
     );
     commit('setUser', response.data);

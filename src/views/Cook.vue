@@ -34,8 +34,8 @@ export default {
     },
     schedule: function() {
       return {
-        today: 0,
-        tomorrow: 0
+        today: 1,
+        tomorrow: 2
       }
     }
   },

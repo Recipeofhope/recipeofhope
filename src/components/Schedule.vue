@@ -11,39 +11,15 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="flex-1 bg-gray-50">
                 <tr>
-                  <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Mon, May 3rd</p>
-                  </th>
-                  <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Tue, May 2nd</p>
-                  </th>
-                  <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Wed, May 3rd</p>
-                  </th>
-                  <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Thu, May 4th</p>
-                  </th>
-                  <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Fri, May 5th</p>
+                  <th class="px-3 py-4 text-center text-sm font-medium text-gray-500 tracking-wider" v-for="day in days" :key="day">
+                    <p> {{ day }} </p>
                   </th>
                 </tr>
               </thead>
               <tbody>
                 <!-- Odd row -->
                 <tr class="bg-white flex-1">
-                  <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
-                  </td>
-                  <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
+                  <td class="px-3 py-4 text-center text-sm font-medium text-gray-500 tracking-wider" v-for="day in days" :key="day">
                     <input class="text-center py-4 border" type="text" name="" id="" value="1">
                   </td>
                 </tr>
@@ -60,6 +36,8 @@
 <script>
 import SectionHeading from '@/components/SectionHeading.vue';
 import Sch from '@/components/Sch.vue';
+import _map from 'lodash/map';
+import { addDays, format } from 'date-fns'
 
 export default {
   props: ['plan'],
@@ -73,7 +51,12 @@ export default {
     },
     tomorrowCount() {
       return this?.plan?.tomorrow?.length
+    },
+    days() {
+      const tomorrow = addDays(new Date(), 1);
+      const daysInTable = _map(new Array(5), (_, index) => format(addDays(tomorrow, index + 1), 'MMM do'));
+      return daysInTable;
     }
-  }
+  },
 }
 </script>

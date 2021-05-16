@@ -117,6 +117,8 @@
 <script>
 import {  mapActions, mapGetters } from 'vuex';
 import Field from "@/components/Field.vue";
+import _get from 'lodash/get';
+import { USER_TYPE_ROUTE_MAP } from '../constants/app.constants';
 
 export default {
   props: ["fullname","username", "phoneNumber", "firstName", "lastName", 'password', 'address1', 'address2'],
@@ -132,11 +134,9 @@ export default {
   computed: mapGetters(['user']),
   watch: {
       user(newUser) {
-        // TODO: Move this to constant file.
-        const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
-        console.log('newUser', newUser);
-        if(newUser.user_type) {
-          const routeTo = USER_TYPE_TO_PATH[newUser.user_type];
+        const userType = _get(newUser, 'user.user_type')
+        if(userType) {
+          const routeTo = USER_TYPE_ROUTE_MAP[userType];
           this.$router.push(routeTo);
         }
       }

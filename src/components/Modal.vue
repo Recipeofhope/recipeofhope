@@ -88,7 +88,7 @@
                   class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
                 >
                   <option>Cook</option>
-                  <option>Recipient</option>
+                  <option>Patient</option>
                 </select>
               </div>
             </div>
@@ -115,9 +115,8 @@
   </div>
 </template>
 <script>
-import {  mapActions } from 'vuex';
+import {  mapActions, mapGetters } from 'vuex';
 import Field from "@/components/Field.vue";
-// import axios from "axios";
 
 export default {
   props: ["fullname","username", "phoneNumber", "firstName", "lastName", 'password', 'address1', 'address2'],
@@ -130,6 +129,19 @@ export default {
       userType: 'Cook'
     }
   },
+  computed: mapGetters(['user']),
+  watch: {
+      user(newUser) {
+        // TODO: Move this to constant file.
+        const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
+        console.log('newUser', newUser);
+        if(newUser.user_type) {
+        const routeTo = USER_TYPE_TO_PATH[newUser.user_type];
+        this.$router.push(routeTo);
+
+        }
+      }
+  },
   methods: {
     ...mapActions(["registerUser"]),
     closeModal() {
@@ -137,7 +149,7 @@ export default {
     },
 
     register() {
-      const obj = {
+      const payload = {
         first_name: this.firstName,
         last_name: this.lastName,
         username: this.username,
@@ -154,8 +166,8 @@ export default {
           city: 'Bengaluru'
         }
       }
-      console.log('obj', obj);
-      this.registerUser(obj);
+      console.log('obj', payload);
+      this.registerUser(payload);
       this.closeModal();
     },
 
@@ -165,31 +177,6 @@ export default {
     onChangeLocality(e) {
       this.locality = e.target.options[e.target.options.selectedIndex].innerText;
     },
-   /*  async signUp() {
-      try {
-        const response = await axios.post("api/user", {
-          first_name: "Tarun",
-          last_name: "Pai",
-          username: "tpai4",
-          approved: false,
-          password: "password",
-          phone_number: "9876543210",
-          user_type: "Cook",
-          address: {
-            first_line: "101, AB Residency",
-            second_line: "12th Cross, 13th A Main",
-            locality: "BTM Layout",
-            zipcode: '560076',
-            state: 'Karnataka',
-            city: 'Bengaluru'
-          }
-        });
-        this.$router.push('/cook');
-        console.log({ response })
-      } catch (error) {
-        console.log({ error })
-      }
-    } */
   }
 };
 </script>

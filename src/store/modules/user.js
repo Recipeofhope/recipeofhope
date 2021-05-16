@@ -1,5 +1,6 @@
 import axios from 'axios';
 import _get from 'lodash/get';
+import Toast from '@/components/Toast';
 
 const EMPTY_STRING = '';
 // const EMPTY_ARRAY = [];
@@ -7,7 +8,7 @@ const EMPTY_OBJECT = {};
 
 const state = {
   user: EMPTY_OBJECT,
-  address: EMPTY_OBJECT,
+  // address: EMPTY_OBJECT,
   tokens: EMPTY_OBJECT,
 };
 
@@ -26,20 +27,28 @@ const getters = {
 };
 
 const actions = {
-  async registerUser({ commit }, obj) {
-    const response = await axios.post('api/user', obj);
-    commit('setRegisteredUser', response.data);
+  async registerUser({ commit }, payload) {
+    try {
+      const response = await axios.post('api/user', payload);
+      commit('setRegisteredUser', response.data);
+    } catch (error) {
+      Toast.error(error);
+    }
   },
 
-  async loginUser({ commit }, obj) {
-    const response = await axios.post('api/user/login', obj);
-    commit('setLoginUser', response.data);
+  async loginUser({ commit }, payload) {
+    try {
+      const response = await axios.post('api/user/login', payload);
+      commit('setLoginUser', response?.data);
+    } catch (error) {
+      Toast.error(error);
+    }
   },
 
-  async fetchUserDetails({ commit }, obj) {
+  async fetchUserDetails({ commit }, payload) {
     const response = await axios.post(
       'api/user/user-details',
-      obj,
+      payload,
       getDefaultHeaders()
     );
     commit('setUser', response.data);
@@ -48,8 +57,10 @@ const actions = {
 
 const mutations = {
   setRegisteredUser: (state, data) => {
-    state.user = _get(data, 'user', EMPTY_OBJECT);
-    state.address = _get(data, 'address', EMPTY_OBJECT);
+    state.user = {
+      ..._get(data, 'user', EMPTY_OBJECT),
+      address: _get(data, 'address', EMPTY_OBJECT),
+    };
     state.tokens = {
       accessToken: _get(data, 'accessToken', EMPTY_STRING),
       refreshToken: _get(data, 'refreshToken', EMPTY_STRING),

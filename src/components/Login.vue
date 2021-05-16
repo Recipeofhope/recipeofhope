@@ -7,38 +7,66 @@
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Login</h2>
-        <Field label="Username" name="username" type="text" :value.sync="username"></Field>
-        <Field label="Password" name="password" type="password" :value.sync="password"></Field>
+        <Field label="Username" name="username" type="text" v-model="username"></Field>
+        <Field label="Password" name="password" type="password" v-model="password"></Field>
         <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10" @click="continueLogin()">Login</button>
       </div>
     </div>
+    <span></span>
     <!-- <Modal v-show="signup" @CloseModal="closeModal()" :fullname="fullname" :phoneNumber="phoneNumber" /> -->
   </section>
 </template>
 <script>
 import Field from '@/components/Field.vue';
 import Toast from '@/components/Toast'
-// import Modal from '@/components/Modal.vue';
+// eslint-disable-next-line no-unused-vars
+import {  mapActions, mapGetters, mapState } from 'vuex';
 
 export default {
   data() {
     return {
       signup: false,
-      fullname: '',
-      phoneNumber: ''
+      username: '',
+      password: ''
     }
   },
   components: {
     // Modal,
     Field
   },
-  methods: {
-    continueLogin() {
-      Toast.open('Write login logic here')
+  computed: mapGetters(['tokens']),
+  
+  watch: {
+    tokens(newTokens, oldTokens) {
+      console.log('newToken ', newTokens.access_token);
+      if(newTokens.access_token) {
+        Toast.success('Login successful!');
+        // this.$router.push('/cook');
+      }
+      console.log('oldTokens', oldTokens);
     },
-    // closeModal() {
-    //   this.signup = false
-    // }
+    // Method 2. 
+    /*     
+    '$store.state.user.tokens': function() {
+    console.log(this.$store.state.user.tokens);
+    }
+    */
+  },
+  methods: {
+    ...mapActions(["loginUser"]),
+
+     handleLogin(response) {
+      console.log('response ', response);
+    },
+
+    continueLogin() {
+      const payload = {username: this.username, password: this.password};
+      console.log('payload ', payload);
+      this.loginUser(payload, this.handleLogin);
+    },
+  },
+  updated() {
+    console.log('called');
   }
 }
 </script>

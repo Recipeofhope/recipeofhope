@@ -8,9 +8,9 @@ const paths = [
   '/user/user-details:GET',
   '/user:PUT',
   '/cook/schedule:PUT',
-
   '/patient/get-meals:GET',
-  '/patient/book-meals:PUT'
+  '/patient/book-meals:PUT',
+  '/cook/meals-ready:POST',
 ];
 
 var authFilter = async function(req, res, next) {

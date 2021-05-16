@@ -9,22 +9,25 @@
           <span class="ml-3 text-xl text-primary">Recipe of Hope</span>
         </router-link>
         <nav class="md:mr-auto md:ml-4 md:py-1 md:pl-4 md:border-l md:border-gray-400	flex flex-wrap items-center text-base justify-center">
-          <router-link class="mr-5 hover:text-gray-900" to="/cook">Cooks</router-link>
-          <router-link class="mr-5 hover:text-gray-900" to="/recipient">Recipients</router-link>
-          <router-link class="mr-5 hover:text-gray-900" to="/admin">Admin</router-link>
+          <router-link v-if="userType === 'Cook'" class="mr-5 hover:text-gray-900" to="/cook">Cooks</router-link>
+          <router-link v-if="userType === 'Patient'" class="mr-5 hover:text-gray-900" to="/recipient">Recipients</router-link>
+          <router-link v-if="userType === 'Admin'" class="mr-5 hover:text-gray-900" to="/admin">Admin</router-link>
         </nav>
-        <button class="inline-flex items-center text-white bg-button border-0 py-1 px-3 focus:outline-none hover:bg-button rounded mt-4 md:mt-0" @click="continueSignUp()">
+        <button v-if="!userType" class="inline-flex items-center text-white bg-button border-0 py-1 px-3 focus:outline-none hover:bg-button rounded mt-4 md:mt-0" @click="continueSignUp()">
           Sign Up
           <svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" class="w-4 h-4 ml-1" viewBox="0 0 24 24">
               <path d="M5 12h14M12 5l7 7-7 7"></path>
           </svg>
         </button>
+        <span class="font-bold text-green-700" v-if="userType"> Hi {{ firstName }}!</span>
         <Modal v-show="signup" @CloseModal="closeModal()" />
       </div>
   </header>
 </template>
 <script>
 import Modal from '@/components/Modal.vue';
+import {  mapGetters } from 'vuex';
+import _get from 'lodash/get';
 
 export default {
   data() {
@@ -35,6 +38,15 @@ export default {
   components: {
     Modal,
   },
+  computed: {
+    ...mapGetters(['user']),
+    userType: function() {
+      return _get(this.user, 'user.user_type', null);
+    },
+    firstName: function() {
+      return _get(this.user, 'user.first_name', '');
+    }
+  }, 
   methods: {
     continueSignUp() {
       this.signup = true
@@ -42,7 +54,7 @@ export default {
     closeModal() {
       this.signup = false
     }
-  }
+  },
 }
 </script>
 <style scoped>

@@ -19,8 +19,7 @@
 <script>
 import Field from '@/components/Field.vue';
 import Toast from '@/components/Toast'
-// eslint-disable-next-line no-unused-vars
-import {  mapActions, mapGetters, mapState } from 'vuex';
+import {  mapActions, mapGetters } from 'vuex';
 
 export default {
   data() {

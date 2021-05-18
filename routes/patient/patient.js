@@ -1,4 +1,5 @@
 const knex = require('../../data/db');
+const { getCurrentIndianDate } = require('../common');
 
 module.exports = {
   getMeals: async function(decodedUser, res) {
@@ -183,19 +184,10 @@ module.exports = {
   },
 };
 
-  function mealBookingTimeCheck() {
-    const d = new Date();
-
-    // convert to msec
-    // subtract local time zone offset
-    // get UTC time in msec
-    const utc = d.getTime() + (d.getTimezoneOffset() * 60000);
-
-    // create new Date object for different city
-    // using supplied offset
-    const nd = new Date(utc + (3600000*'+5.5'));
-    // if is is after 8 PM, patient cannot book a meal.
-    if (nd.getHours() >= 20) {
-      throw new Error('Cannot book meals after 8 PM. Please consider joining the waitlist.');
-    }
+function mealBookingTimeCheck() {
+const date = getCurrentIndianDate();
+  // if is is after 8 PM, patient cannot book a meal.
+  if (date.getHours() >= 20) {
+    throw new Error('Cannot book meals after 8 PM. Please consider joining the waitlist.');
   }
+}

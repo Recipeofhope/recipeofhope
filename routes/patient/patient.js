@@ -12,6 +12,7 @@ module.exports = {
       else {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getUTCDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
 
         //Getting available meals scheduled for tomorrow.
 
@@ -121,7 +122,7 @@ module.exports = {
   bookMeals: async function(decodedUser, requestBody, res) {
     try {
       if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
-      else if (decodedUser.user_type != 'Patient')
+      else if (decodedUser.user_type !== 'Patient')
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
@@ -182,12 +183,65 @@ module.exports = {
       res.status(400).json({ message: error.message });
     }
   },
+  cancelMeal: async function(patient, reqBody, res) {
+    try {
+      if (patient.user_type !== 'Patient') {
+        throw new Error('Only patients cance meals via this route.');
+      }
+      const cookId = reqBody.cook_id;
+      const mealScheduledFor = reqBody.scheduled_for;
+
+      // Get all meals, which have the given patients id and the given cook's id.
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const meals = await knex
+        .select('id', 'patient_id', 'scheduled_for', 'cancelled')
+        .from('meal')
+        .where({ cook_id: cookId, patient_id: patient.id })
+        .andWhere('scheduled_for', mealScheduledFor);
+
+      if (!meals || meals.length === 0) {
+        throw new Error(
+          'No errors to cancel for this cook for the given recipient.'
+        );
+      }
+
+      const currentIndianDate = getCurrentIndianDate();
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setDate(tomorrowMidnight.getUTCDate() + 1);
+      tomorrowMidnight.setHours(0, 0, 0, 0);
+
+      // // For each meal
+      // for (const meal of meals) {
+      //   // if the meal being cancelled is scheduled for today OR (for tomorrow, but current india time is after 8 PM), mark the meal as cancelled. Also, whatsapp the admin with the details of the patient, cook and no. of meals cancelled.
+      //   if (meal.scheduled_for.getTime() === todayMidnight.getTime()) {
+      //     if (currentIndianDate.getHours() <= 12) {
+      //       markMealAsCancelled();
+      //     } else {
+      //       throw new Error('Meals scheduled for today cannot be cancelled after 12 PM.');
+      //     }
+      //   } else if (meal.scheduled_for.getTime() === tomorrowMidnight.getTime()) {
+      //     if (currentIndianDate.getHours() >= 20) {
+      //       markMealAsCancelled();
+      //     } else {
+      //     // If the meal being cancelled is for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.
+      //     }
+      //   }
+      // }
+
+      // If the meal being cancelled is for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
 };
 
 function mealBookingTimeCheck() {
-const date = getCurrentIndianDate();
+  const date = getCurrentIndianDate();
   // if is is after 8 PM, patient cannot book a meal.
   if (date.getHours() >= 20) {
-    throw new Error('Cannot book meals after 8 PM. Please consider joining the waitlist.');
+    throw new Error(
+      'Cannot book meals after 8 PM. Please consider joining the waitlist.'
+    );
   }
 }

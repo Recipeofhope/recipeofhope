@@ -205,7 +205,7 @@ module.exports = {
                 .returning('user_id');
             });
         });
-        res.status(204).json({ id: userId, message: 'updated user' });
+        res.status(200).json({ id: userId, message: 'updated user' });
       }
     } catch (error) {
       res.status(400).json({ message: error.message });

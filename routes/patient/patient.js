@@ -2,16 +2,17 @@ const knex = require('../../data/db');
 const { getCurrentIndianDate } = require('../common');
 
 module.exports = {
-  getMeals: async function(decodedUser, res) {
+  getMeals: async function(cook, res) {
     try {
-      if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
-      else if (decodedUser.user_type != 'Patient')
+      if (!cook) res.status(400).json({ message: 'Invalid user' });
+      else if (cook.user_type != 'Patient')
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
       else {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getUTCDate() + 1);
+        tomorrow.setHours(0, 0, 0, 0);
 
         //Getting available meals scheduled for tomorrow.
 
@@ -71,7 +72,7 @@ module.exports = {
         let getUserLocalityQuery = knex
           .select('address.locality_id')
           .from('address')
-          .where('address.user_id', '=', decodedUser.id);
+          .where('address.user_id', '=', cook.id);
 
         let userLocationDetails = await getUserLocalityQuery;
 
@@ -118,10 +119,10 @@ module.exports = {
     }
   },
 
-  bookMeals: async function(decodedUser, requestBody, res) {
+  bookMeals: async function(cook, requestBody, res) {
     try {
-      if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
-      else if (decodedUser.user_type != 'Patient')
+      if (!cook) res.status(400).json({ message: 'Invalid user' });
+      else if (cook.user_type !== 'Patient')
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
@@ -156,7 +157,7 @@ module.exports = {
 
             for (let j = 0; j < requestBody[i].number_of_meals; j++) {
               var result = await tr('meal')
-                .update({ patient_id: decodedUser.id })
+                .update({ patient_id: cook.id })
                 .where('meal.id', '=', resultMeals[j].id);
             }
 
@@ -182,12 +183,160 @@ module.exports = {
       res.status(400).json({ message: error.message });
     }
   },
+  cancelMeal: async function(patient, reqBody, res) {
+    try {
+      if (patient.user_type !== 'Patient') {
+        throw new Error('Only patients cance meals via this route.');
+      }
+      const cookId = reqBody.cook_id;
+      const mealScheduledFor = reqBody.scheduled_for;
+
+      // Get all meals, which have the given patients id and the given cook's id.
+      const todayMidnight = new Date();
+      todayMidnight.setHours(0, 0, 0, 0);
+      const meals = await knex
+        .select('id', 'patient_id', 'scheduled_for', 'cancelled')
+        .from('meal')
+        .where({ cook_id: cookId, patient_id: patient.id })
+        .andWhere('scheduled_for', mealScheduledFor);
+
+      if (!meals || meals.length === 0) {
+        throw new Error(
+          'No errors to cancel for this cook for the given recipient.'
+        );
+      }
+
+      const currentIndianDate = getCurrentIndianDate();
+      const tomorrowMidnight = new Date();
+      tomorrowMidnight.setDate(tomorrowMidnight.getUTCDate() + 1);
+      tomorrowMidnight.setHours(0, 0, 0, 0);
+      const [YYYY, MM, DD] = mealScheduledFor.split('-');
+      const mealScheduledForDate = new Date(YYYY, MM - 1, DD);
+
+      if (mealScheduledForDate.getTime() === todayMidnight.getTime()) {
+        if (currentIndianDate.getHours() <= 10) {
+          markMealsAsCancelled(meals, res, patient, cookId);
+          return;
+        } else {
+          throw new Error(
+            'Meals scheduled for today cannot be cancelled after 12 PM.'
+          );
+        }
+      } else if (
+        mealScheduledForDate.getTime() === tomorrowMidnight.getTime()
+      ) {
+        if (currentIndianDate.getHours() >= 20) {
+          markMealsAsCancelled(meals, res, patient, cookId);
+          return;
+        } else {
+          // If the meal being cancelled is for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.
+          removePatientIdFromMeals(meals, res);
+          return;
+        }
+      }
+      // If we've reached here, the scheduled_for date provided is invalid.
+      throw new Error('Meals cannot be cancelled at the given date');
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
 };
 
-function mealBookingTimeCheck() {
-const date = getCurrentIndianDate();
+async function markMealsAsCancelled(meals, res, patient, cookId) {
+  // Cancel every meal together in one batch.
+  const result = await knex.transaction(async (tr) => {
+    for (const meal of meals) {
+      await tr('meal')
+        .update('cancelled', true)
+        .where('id', meal.id);
+    }
+  });
+
+  if (!result || result.length === 0) {
+    throw new Error('No meals to cancel for the given cook.');
+  }
+
+  // Whatsapp the admin telling them how many meals have been cancelled, along with details of the cook and patient.
+
+  // Get the cook details.
+  const cook = await knex
+    .select(
+      'user.first_name',
+      'user.last_name',
+      'user.phone_number',
+      'address.locality_id',
+      'address.first_line',
+      'address.second_line',
+      'address.building_name',
+      'address.house_number',
+      'address.zipcode',
+      'address.state',
+      'address.city',
+      'locality.name'
+    )
+    .from('user')
+    .join('address', 'user.id', '=', 'address.user_id')
+    .join('locality', 'address.locality_id', '=', 'locality.id')
+    .where('user.id', cookId)
+    .first();
+
+  // Whatsapp the admin
+  var accountSid = process.env.TWILIO_ACCOUNT_SID;
+  var authToken = process.env.TWILIO_AUTH_TOKEN;
+
+  var twilio = require('twilio');
+  var client = new twilio(accountSid, authToken);
+  const patientStr =
+    patient.first_name +
+    ' ' +
+    patient.last_name +
+    '\nPhone number: ' +
+    patient.phone_number +
+    '\n\n';
+  const cookStr =
+    'Name: ' +
+    cook.first_name +
+    ' ' +
+    cook.last_name +
+    '\nPhone number: ' +
+    cook.phone_number +
+    '\nAddress: ' +
+    cook.house_number +
+    ', ' +
+    cook.building_name +
+    ',\n' +
+    cook.first_line +
+    ',\n' +
+    cook.second_line +
+    '\n' +
+    cook.city +
+    ' - ' +
+    cook.zipcode +
+    '\n' +
+    cook.state;
+
+  client.messages.create({
+    from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
+    body:
+      'Hi! The following meal recipient has cancelled *' +
+      meals.length +
+      '* meals: \n\n' +
+      patientStr +
+      'The cook details are: \n\n' +
+      cookStr +
+      '\n\nPlease check the waitlist to re-route cancelled meals.\n\nRegards,\nRecipe of Hope Website',
+    to: 'whatsapp:+91' + process.env.WHATSAPP_ADMIN_NUMBER,
+  });
+
+  res.status(200).json({ message: 'Meals successfully cancelled.' });
+}
+
+async function mealBookingTimeCheck() {
+  const date = getCurrentIndianDate();
   // if is is after 8 PM, patient cannot book a meal.
   if (date.getHours() >= 20) {
-    throw new Error('Cannot book meals after 8 PM. Please consider joining the waitlist.');
+    throw new Error(
+      'Cannot book meals after 8 PM. Please consider joining the waitlist.'
+    );
   }
 }

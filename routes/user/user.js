@@ -205,7 +205,7 @@ module.exports = {
                 .returning('user_id');
             });
         });
-        res.status(204).json({ id: userId, message: 'updated user' });
+        res.status(200).json({ id: userId, message: 'updated user' });
       }
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -275,7 +275,7 @@ async function getUserDetails(user) {
       'user.user_type',
       'meal.ready as meal_ready',
       'meal.scheduled_for as meal_scheduled_for',
-      'meal.delivered as meal_delivered',
+      'meal.cancelled as meal_cancelled',
       'meal.patient_id as meal_patient_id',
       'address.first_line AS address_first_line',
       'address.second_line AS address_second_line',
@@ -306,7 +306,6 @@ async function getUserDetails(user) {
     date.setDate(date.getUTCDate() + 1);
   }
   date.setHours(0, 0, 0, 0); // Set date to midnight, for subsequent comparisions with the dates fetched from the DB.
-  getDetailsQuery = getDetailsQuery.where('meal.scheduled_for', '>=', date);
   let result = await getDetailsQuery
     .leftJoin('address', 'address.user_id', 'user.id')
     .leftJoin('locality', 'address.locality_id', 'locality.id')
@@ -353,7 +352,7 @@ function getReturnObj(result, date) {
     }
     const meal = {};
     meal.meal_ready = mealObj.meal_ready;
-    meal.meal_delivered = mealObj.meal_delivered;
+    meal.meal_cancelled = mealObj.meal_cancelled;
     const meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
       'en-CA'
     );
@@ -362,8 +361,8 @@ function getReturnObj(result, date) {
     }
 
     returnObj.meals[meal_scheduled_for].push({
-      meal_ready: meal.meal_ready,
-      meal_delivered: meal.meal_delivered,
+      ready: meal.meal_ready,
+      cancelled: meal.meal_cancelled,
     });
   }
   return returnObj;

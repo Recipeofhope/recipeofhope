@@ -6,6 +6,7 @@ const {
   getAccessToken,
   logout,
   updateUser,
+  getLocalities,
 } = require('./user');
 
 var router = require('express').Router();
@@ -84,6 +85,10 @@ router.post('/', async function(req, res) {
 
 router.get('/user-details', function(req, res) {
   return getUser(req.decodedUser, res);
+});
+
+router.get('/localities', function(req, res) {
+  return getLocalities(req, res);
 });
 
 router.get('/access-token', function(req, res) {

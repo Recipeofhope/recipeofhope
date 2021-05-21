@@ -1,26 +1,30 @@
 const knex = require('../../data/db');
 
 module.exports = {
-  unapprovedCookList: async function(user, requestBody, res) {
+  unapprovedCookList: async function(user, res) {
     try {
-      if (!decodedUser) res.status(400).json({ message: 'Invalid user' });
-      else if (decodedUser.user_type != 'Admin')
+      if (!user) res.status(400).json({ message: 'Invalid user' });
+      else if (user.user_type != 'Admin')
         res.status(400).json({
           message: 'User type is not allowed to access this information.',
         });
       else {
         let unapprovedCooksQuery = knex
-          .select('user.id')
+          .select(
+            'user.id',
+            'user.first_name',
+            'user.last_name',
+            'user.username',
+            'user.phone_number'
+          )
           .from('user')
-          .where('user.user_type', '=', 'Cook')
-          .andWhere('user.approved', '=', 'False');
+          .where('user.user_type', 'Cook')
+          .andWhere('user.approved', false);
 
         let resultCooks = await unapprovedCooksQuery;
 
-        if (!resultCooks || resultCooks.length == 0)
-          throw new Error(
-            'Error while fetching service areas of patient location.'
-          );
+        if (!resultCooks)
+          throw new Error('Error while fetching unapproved cooks.');
 
         res.status(200).json(resultCooks);
       }

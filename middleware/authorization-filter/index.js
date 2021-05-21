@@ -12,6 +12,7 @@ const paths = [
   '/patient/book-meals:PUT',
   '/patient/cancel-meal:POST',
   '/patient/waitlist:POST',
+  '/admin/unapproved-cooks:GET',
   '/cook/meals-ready:POST',
 ];
 

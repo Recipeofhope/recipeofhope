@@ -12,19 +12,19 @@
               <thead class="flex-1 bg-gray-50">
                 <tr>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Mon, May 3rd</p>
+                    <p>{{ dateArray[0] }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Tue, May 2nd</p>
+                    <p>{{ dateArray[1] }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Wed, May 3rd</p>
+                    <p>{{ dateArray[2] }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Thu, May 4th</p>
+                    <p>{{ dateArray[3] }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Fri, May 5th</p>
+                    <p>{{ dateArray[4] }}</p>
                   </th>
                 </tr>
               </thead>
@@ -73,6 +73,40 @@ export default {
     },
     tomorrowCount() {
       return this?.plan?.tomorrow?.length
+    }
+  },
+  data() {
+    return {
+        dateArray: this.getDatesWeekArray()
+      }
+  },
+  methods: {
+    getDatesWeekArray() {
+      const dateArray = []
+      const monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December" ]; 
+      const dayNames = ["Sun", "Mon", "Tues", "Wed", "Thurs", "Fri", "Sat"]
+
+      var today, day2, day3, day4, day5
+      today = new Date()
+      day2  = new Date()
+      day3 = new Date()
+      day4 = new Date()
+      day5 = new Date()
+      
+      day2.setDate(today.getDate() + 1)
+      day3.setDate(today.getDate() + 2)
+      day4.setDate(today.getDate() + 3)
+      day5.setDate(today.getDate() + 4)
+
+      dateArray.push(`${dayNames[today.getDay()]}, ${monthNames[today.getMonth()]} ${today.getDate()}`)
+      dateArray.push(`${dayNames[day2.getDay()]}, ${monthNames[day2.getMonth()]} ${day2.getDate()}`)
+      dateArray.push(`${dayNames[day3.getDay()]}, ${monthNames[day3.getMonth()]} ${day3.getDate()}`)
+      dateArray.push(`${dayNames[day4.getDay()]}, ${monthNames[day4.getMonth()]} ${day4.getDate()}`)
+      dateArray.push(`${dayNames[day5.getDay()]}, ${monthNames[day5.getMonth()]} ${day5.getDate()}`)
+
+      return dateArray
+
     }
   }
 }

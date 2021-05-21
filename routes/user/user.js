@@ -363,14 +363,9 @@ function getReturnObj(result, date) {
     }
     const meal = {};
     meal.meal_ready = mealObj.meal_ready;
-<<<<<<< HEAD
     meal.meal_delivered = mealObj.meal_delivered;
 
     const meal_scheduled_for = mealObj.meal_scheduled_for?.toLocaleDateString(
-=======
-    meal.meal_cancelled = mealObj.meal_cancelled;
-    const meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
->>>>>>> main
       'en-CA'
     );
     if (!(meal_scheduled_for in returnObj.meals)) {

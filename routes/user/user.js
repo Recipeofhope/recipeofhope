@@ -262,6 +262,17 @@ module.exports = {
     }
     res.sendStatus(status);
   },
+  getLocalities: async (req, res) => {
+    try {
+      const localities = await knex.select('name').from('locality');
+      if (!localities || localities.length === 0) {
+        throw new Error('No localities found.');
+      }
+      res.status(200).json({ localities });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
 };
 
 async function getUserDetails(user) {

@@ -10,8 +10,8 @@
           </svg>
         </span>
         <h2 class="text-2xl leading-7 text-gray-900 sm:text-3xl sm:truncate px-5">
-          <p class="font-bold">Hi, John Doe</p>
-          <p class="text-sm text-gray-500 italic">Thank you for volunteeing as a cook.</p>
+          <p class="font-bold">Hi, {{name}}</p>
+          <p class="text-sm text-gray-500 italic">{{ type === 'cook' ? cookTxt : recipientTxt }}</p>
         </h2>
       </div>
       <!-- <div class="mt-4 flex md:mt-0 md:ml-4">
@@ -22,3 +22,14 @@
     </div>
   </div>
 </template>
+<script>
+export default {
+  props: ['name', 'type'],
+  data() {
+    return {
+      cookTxt: 'Thank you for volunteeing as a cook.',
+      recipientTxt: 'Get well soon!'
+    }
+  }
+}
+</script>

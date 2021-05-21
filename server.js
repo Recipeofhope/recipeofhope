@@ -4,13 +4,15 @@ const path = require('path');
 const port = process.env.PORT || 3000;
 const swaggerJsdoc = require('swagger-jsdoc');
 const swaggerUi = require('swagger-ui-express');
+const cors = require('cors');
+
 require('dotenv').config();
 
+app.use(express.json());
+app.use(cors());
 app.use(express.static('dist'));
 
 app.use(require('./middleware/authorization-filter'))
-
-app.use(express.json());
 app.use('/user', require('./routes/user'));
 app.use('/cook', require('./routes/cook'));
 app.use('/patient', require('./routes/patient'));
@@ -37,10 +39,7 @@ const options = {
     ],
   },
   apis: [
-    './routes/user/index.js',
-    './routes/admin/index.js',
-    './routes/cook/index.js',
-    './routes/patient/index.js',
+    './routes/*/*.js',
   ],
 };
 

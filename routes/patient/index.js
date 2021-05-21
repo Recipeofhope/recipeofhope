@@ -1,4 +1,9 @@
-const { getMeals, bookMeals, cancelMeal } = require('./patient');
+const {
+  getMeals,
+  bookMeals,
+  cancelMeal,
+  waitlistPatient,
+} = require('./patient');
 
 var router = require('express').Router();
 
@@ -11,8 +16,12 @@ router.put('/book-meals', function(req, res) {
   return bookMeals(req.decodedUser, req.body, res);
 });
 
-router.post('/cancel-meal/', function(req, res) {
+router.post('/cancel-meal', function(req, res) {
   return cancelMeal(req.decodedUser, req.body, res);
+});
+
+router.post('/waitlist', function(req, res) {
+  return waitlistPatient(req.decodedUser, req.body, res);
 });
 
 module.exports = router;

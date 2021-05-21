@@ -1,7 +1,8 @@
-
-const { 
+const {
   getMeals,
-  bookMeals 
+  bookMeals,
+  cancelMeal,
+  waitlistPatient,
 } = require('./patient');
 
 var router = require('express').Router();
@@ -12,13 +13,15 @@ router.get('/get-meals', function(req, res) {
 
 router.put('/book-meals', function(req, res) {
   console.log('reached patient/book-meals');
-  return bookMeals(req.decodedUser, req.body, res)
-
+  return bookMeals(req.decodedUser, req.body, res);
 });
 
-router.post('/cancel-meal/:id', function(req, res) {
-  console.log('reached patient/cancel-meal with id: ' + req.params.id);
+router.post('/cancel-meal', function(req, res) {
+  return cancelMeal(req.decodedUser, req.body, res);
+});
+
+router.post('/waitlist', function(req, res) {
+  return waitlistPatient(req.decodedUser, req.body, res);
 });
 
 module.exports = router;
-

@@ -2,6 +2,7 @@ const knex = require('../../data/db');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
+const { getCurrentIndianDate } = require('../common');
 const refreshTokens = {};
 
 module.exports = {
@@ -204,7 +205,7 @@ module.exports = {
                 .returning('user_id');
             });
         });
-        res.status(204).json({ id: userId, message: 'updated user' });
+        res.status(200).json({ id: userId, message: 'updated user' });
       }
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -261,6 +262,17 @@ module.exports = {
     }
     res.sendStatus(status);
   },
+  getLocalities: async (req, res) => {
+    try {
+      const localities = await knex.select('name').from('locality');
+      if (!localities || localities.length === 0) {
+        throw new Error('No localities found.');
+      }
+      res.status(200).json({ localities });
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
 };
 
 async function getUserDetails(user) {
@@ -274,7 +286,8 @@ async function getUserDetails(user) {
       'user.user_type',
       'meal.ready as meal_ready',
       'meal.scheduled_for as meal_scheduled_for',
-      'meal.delivered as meal_delivered',
+      'meal.cancelled as meal_cancelled',
+      'meal.patient_id as meal_patient_id',
       'address.first_line AS address_first_line',
       'address.second_line AS address_second_line',
       'address.building_name AS address_building_name',
@@ -298,11 +311,17 @@ async function getUserDetails(user) {
       'user.id'
     );
   }
+  const currentIndianDate = getCurrentIndianDate();
+  const date = new Date();
+  if (currentIndianDate.getHours >= 20) {
+    date.setDate(date.getUTCDate() + 1);
+  }
+  date.setHours(0, 0, 0, 0); // Set date to midnight, for subsequent comparisions with the dates fetched from the DB.
   let result = await getDetailsQuery
     .leftJoin('address', 'address.user_id', 'user.id')
     .leftJoin('locality', 'address.locality_id', 'locality.id')
     .where('user.id', '=', user.id);
-  const returnObj = getReturnObj(result);
+  const returnObj = getReturnObj(result, date);
   return returnObj;
 }
 
@@ -311,7 +330,7 @@ async function authenticateUser(userPassword, dbUserPassword) {
   return match;
 }
 
-function getReturnObj(result) {
+function getReturnObj(result, date) {
   const returnObj = {};
   if (!result || typeof result === 'undefined' || result.length == 0) {
     throw new Error('Error while fetching user details.');
@@ -334,11 +353,24 @@ function getReturnObj(result) {
   returnObj.address.locality = result[0].address_locality;
   returnObj.meals = {};
   for (const mealObj of result) {
+    // For a cook, for today's/tomorrow's meals, we must only count the meals that have a patient ID assigned, as the meals with no patient IDs are meals that the cook has pledged, but they do not need to cook.
+    if (
+      returnObj.user.user_type === 'Cook' &&
+      mealObj.meal_scheduled_for.getTime() === date.getTime() &&
+      !mealObj.meal_patient_id
+    ) {
+      continue;
+    }
     const meal = {};
     meal.meal_ready = mealObj.meal_ready;
+<<<<<<< HEAD
     meal.meal_delivered = mealObj.meal_delivered;
 
     const meal_scheduled_for = mealObj.meal_scheduled_for?.toLocaleDateString(
+=======
+    meal.meal_cancelled = mealObj.meal_cancelled;
+    const meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
+>>>>>>> main
       'en-CA'
     );
     if (!(meal_scheduled_for in returnObj.meals)) {
@@ -346,8 +378,8 @@ function getReturnObj(result) {
     }
 
     returnObj.meals[meal_scheduled_for].push({
-      meal_ready: meal.meal_ready,
-      meal_delivered: meal.meal_delivered,
+      ready: meal.meal_ready,
+      cancelled: meal.meal_cancelled,
     });
   }
   return returnObj;

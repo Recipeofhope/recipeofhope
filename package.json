@@ -32,6 +32,7 @@
     "swagger-jsdoc": "^6.1.0",
     "swagger-ui-express": "^4.1.6",
     "tailwindcss": "npm:@tailwindcss/postcss7-compat@^2.0.2",
+    "twilio": "^3.62.0",
     "uuid": "^3.4.0",
     "vue": "^2.6.11",
     "vue-router": "^3.2.0",

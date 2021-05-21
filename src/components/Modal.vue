@@ -59,16 +59,29 @@
                 type="tel"
                 v-model="phoneNumber"
               ></Field>
-              <Field label="First Name" type="text" v-model='firstName' ></Field>
+              <Field label="First Name" type="text" v-model="firstName"></Field>
               <Field label="Last Name" type="text" v-model="lastName"></Field>
-              <Field label="Password" type="password" v-model="password"></Field>
-              <Field label="Address Line 1" type="text" v-model="address1"></Field>
-              <Field label="Address Line 2" type="text" v-model="address2"></Field>
+              <Field
+                label="Password"
+                type="password"
+                v-model="password"
+              ></Field>
+              <Field
+                label="Address Line 1"
+                type="text"
+                v-model="address1"
+              ></Field>
+              <Field
+                label="Address Line 2"
+                type="text"
+                v-model="address2"
+              ></Field>
               <div class="relative mb-4">
                 <label for="location" class="leading-7 text-sm text-primary"
                   >Select Locality</label
                 >
-                <select  @change="onChangeLocality($event)"
+                <select
+                  @change="onChangeLocality($event)"
                   id="location"
                   name="location"
                   class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
@@ -82,7 +95,8 @@
                 <label for="usertype" class="leading-7 text-sm text-primary"
                   >Sign Up As</label
                 >
-                <select @change="onChangeUserType($event)"
+                <select
+                  @change="onChangeUserType($event)"
                   id="usertype"
                   name="location"
                   class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out"
@@ -115,36 +129,45 @@
   </div>
 </template>
 <script>
-import {  mapActions, mapGetters } from 'vuex';
-import Field from "@/components/Field.vue";
+import { mapActions, mapGetters } from 'vuex';
+import Field from '@/components/Field.vue';
 
 export default {
-  props: ["fullname","username", "phoneNumber", "firstName", "lastName", 'password', 'address1', 'address2'],
+  props: [
+    'fullname',
+    'username',
+    'phoneNumber',
+    'firstName',
+    'lastName',
+    'password',
+    'address1',
+    'address2',
+  ],
   components: {
-    Field
+    Field,
   },
   data() {
     return {
       locality: 'BTM Layout',
-      userType: 'Cook'
-    }
+      userType: 'Cook',
+    };
   },
   computed: mapGetters(['user']),
   watch: {
-      user(newUser) {
-        // TODO: Move this to constant file.
-        const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
-        console.log('newUser', newUser);
-        if(newUser?.user?.user_type) {
-          const routeTo = USER_TYPE_TO_PATH[newUser.user.user_type];
-          this.$router.push(routeTo);
-        }
+    user(newUser) {
+      // TODO: Move this to constant file.
+      const USER_TYPE_TO_PATH = { Cook: '/cook', Patient: '/recipient' };
+      console.log('newUser', newUser);
+      if (newUser?.user?.user_type) {
+        const routeTo = USER_TYPE_TO_PATH[newUser.user.user_type];
+        this.$router.push(routeTo);
       }
+    },
   },
   methods: {
-    ...mapActions(["registerUser"]),
+    ...mapActions(['registerUser']),
     closeModal() {
-      this.$emit("CloseModal", true);
+      this.$emit('CloseModal', true);
     },
 
     register() {
@@ -162,20 +185,22 @@ export default {
           locality: this.locality,
           zipcode: '560076',
           state: 'Karnataka',
-          city: 'Bengaluru'
-        }
-      }
+          city: 'Bengaluru',
+        },
+      };
       console.log('obj', payload);
       this.registerUser(payload);
       this.closeModal();
     },
 
     onChangeUserType(e) {
-      this.userType = e.target.options[e.target.options.selectedIndex].innerText;
+      this.userType =
+        e.target.options[e.target.options.selectedIndex].innerText;
     },
     onChangeLocality(e) {
-      this.locality = e.target.options[e.target.options.selectedIndex].innerText;
+      this.locality =
+        e.target.options[e.target.options.selectedIndex].innerText;
     },
-  }
+  },
 };
 </script>

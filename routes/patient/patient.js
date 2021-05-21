@@ -1,5 +1,6 @@
 const knex = require('../../data/db');
-const { getCurrentIndianDate } = require('../common');
+const { v4: uuidv4 } = require('uuid');
+const { getCurrentIndianDate, getMealsForTomorrow } = require('../common');
 
 module.exports = {
   getMeals: async function(cook, res) {
@@ -10,23 +11,14 @@ module.exports = {
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
       else {
-        const tomorrow = new Date();
-        tomorrow.setDate(tomorrow.getUTCDate() + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-
-        //Getting available meals scheduled for tomorrow.
-
-        let getMealsQuery = knex
-          .select('meal.cook_id')
-          .count('meal.id')
-          .from('meal')
-          .where('meal.scheduled_for', '=', tomorrow)
-          .whereNull('meal.patient_id')
-          .groupBy('meal.cook_id');
-
-        let resultMeals = await getMealsQuery;
-        if (!resultMeals || resultMeals.length == 0) {
+        let resultMeals = await getMealsForTomorrow();
+        if (!resultMeals) {
           throw new Error('Error while fetching meal details.');
+        }
+        if (resultMeals.length === 0) {
+          throw new Error(
+            'No meals available for tomorrow. Please consider joining the waitlist.'
+          );
         }
 
         //Getting cook details for available meals.
@@ -48,8 +40,11 @@ module.exports = {
         let resultCooks = await getCooksQuery;
 
         //Final list of available meals from cooks.
-        if (!resultCooks || resultCooks.length == 0) {
+        if (!resultCooks) {
           throw new Error('Error while fetching available meals.');
+        }
+        if (resultCooks.length === 0) {
+          throw new Error('No cooks available at the moment.');
         }
 
         for (let i = 0; i < resultMeals.length; i++) {
@@ -76,8 +71,11 @@ module.exports = {
 
         let userLocationDetails = await getUserLocalityQuery;
 
-        if (!userLocationDetails || userLocationDetails.length == 0) {
+        if (!userLocationDetails) {
           throw new Error('Error while fetching location details of patient.');
+        }
+        if (userLocationDetails.length === 0) {
+          throw new Error('No address present for patient.');
         }
 
         // Get service areas of patient location.
@@ -236,6 +234,55 @@ module.exports = {
       }
       // If we've reached here, the scheduled_for date provided is invalid.
       throw new Error('Meals cannot be cancelled at the given date');
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
+  waitlistPatient: async function(patient, reqBody, res) {
+    try {
+      if (patient.user_type !== 'Patient') {
+        throw new Error('Only patients can join the waitlist.');
+      }
+      // If meals for tomorrow are available, patient cannot join the waitlist.
+      const resultMeals = await getMealsForTomorrow();
+      if (!resultMeals) {
+        throw new Error('Error while fetching meal details.');
+      }
+      if (resultMeals.length > 0) {
+        throw new Error(
+          'Cannot join the waitlist as meals for tomorrow are available.'
+        );
+      }
+
+      // Check if patient has already joined the waitlist for today.
+      const currentIndianDate = getCurrentIndianDate();
+      // set the date to midnight, as we are checking if the patient joined the waitlist between midnight and now.
+      currentIndianDate.setHours(0, 0, 0, 0);
+      const waitListJoinTime = new Date();
+      const patientResult = await knex
+        .select('id')
+        .from('waitlist')
+        .whereBetween('waitlist_join_time', [
+          currentIndianDate,
+          waitListJoinTime,
+        ])
+        .andWhere('patient_id', patient.id);
+      if (patientResult && patientResult.length > 0) {
+        throw new Error('Already joined waitlist for today.');
+      }
+      // Insert patient on to the waitlist.
+      const mealsRequested = reqBody.meals_requested;
+      if (!mealsRequested || mealsRequested === 0) {
+        throw new Error('No. of meals requested not specified.');
+      }
+      const waitlistPatient = {
+        id: uuidv4(),
+        patient_id: patient.id,
+        meals_requested: mealsRequested,
+        waitlist_join_time: waitListJoinTime,
+      };
+      await knex('waitlist').insert(waitlistPatient);
+      res.status(200).json({ message: 'Successfully joined waitlist!' });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }

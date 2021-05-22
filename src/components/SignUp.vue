@@ -12,7 +12,7 @@
         <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10" @click="continueSignup()">Sign Up</button>
       </div>
     </div>
-    <Modal v-show="signup" @CloseModal="closeModal()" :fullname="fullname" :phoneNumber="phoneNumber" />
+    <Modal v-show="signup" @CloseModal="closeModal()" :name="fullname" :phone="phoneNumber" />
   </section>
 </template>
 <script>

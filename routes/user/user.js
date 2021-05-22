@@ -276,6 +276,26 @@ module.exports = {
 };
 
 async function getUserDetails(user) {
+  if (user.user_type === 'Admin') {
+    const admin = await knex
+      .select(
+        'user.id',
+        'user.first_name',
+        'user.last_name',
+        'user.username',
+        'user.approved',
+        'user.user_type'
+      )
+      .from('user')
+      .where('user.id', user.id)
+      .first();
+    if (!admin) {
+      throw new Error('Error fetching admin details.');
+    }
+    return {
+      user: admin,
+    };
+  }
   let getDetailsQuery = knex
     .select(
       'user.id',
@@ -284,8 +304,8 @@ async function getUserDetails(user) {
       'user.username',
       'user.approved',
       'user.user_type',
-      'meal.ready as meal_ready',
-      'meal.scheduled_for as meal_scheduled_for',
+      'meal.ready AS meal_ready',
+      'meal.scheduled_for AS meal_scheduled_for',
       'meal.cancelled as meal_cancelled',
       'meal.patient_id as meal_patient_id',
       'address.first_line AS address_first_line',
@@ -364,17 +384,22 @@ function getReturnObj(result, date) {
     const meal = {};
     meal.meal_ready = mealObj.meal_ready;
     meal.meal_cancelled = mealObj.meal_cancelled;
-    const meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
-      'en-CA'
-    );
-    if (!(meal_scheduled_for in returnObj.meals)) {
+    let meal_scheduled_for = null;
+    if (mealObj.meal_scheduled_for) {
+      meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
+        'en-CA'
+      );
+    }
+    if (!(meal_scheduled_for in returnObj.meals) && meal_scheduled_for) {
       returnObj.meals[meal_scheduled_for] = [];
     }
 
-    returnObj.meals[meal_scheduled_for].push({
-      ready: meal.meal_ready,
-      cancelled: meal.meal_cancelled,
-    });
+    if (meal_scheduled_for) {
+      returnObj.meals[meal_scheduled_for].push({
+        ready: meal.meal_ready,
+        cancelled: meal.meal_cancelled,
+      });
+    }
   }
   return returnObj;
 }

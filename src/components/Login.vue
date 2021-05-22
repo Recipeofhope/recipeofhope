@@ -22,6 +22,29 @@
 </template>
 <script>
 
+import axios from "axios";
+const state = () => ({
+  authData: {
+    accessToken: "",
+    refreshToken: "",
+  },
+  loginStatus: "",
+});
+const mutations = {
+  saveTokenData(state, data) {
+    localStorage.setItem("access_token", data.access_token);
+    localStorage.setItem("refresh_token", data.refresh_token);
+
+    const newTokenData = {
+      authData:{
+      accessToken: data.access_token,
+      refreshToken: data.refresh_token,
+      },
+      loginStatus: true,
+    };
+    state.authData = newTokenData;
+  },
+}
 export default {
   data() {
     return {
@@ -30,9 +53,21 @@ export default {
     }
   },
   methods: {
-    loginClicked() {
+    async loginClicked() {
       console.log("login button clicked", this.username, this.password)
-    },
-  }
+      try{
+      const response = await axios.post("https://recipeofhope.herokuapp.com/user/login", {
+        username: this.username,
+        password:this.password
+      });
+      console.log("response: ", response)
+      commit("saveTokenData", response.data);
+    } catch(error) {
+      // TODO: display error message
+      console.log("error: ", error)
+    }
+  },
 }
+}
+
 </script>

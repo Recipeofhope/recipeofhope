@@ -7,30 +7,32 @@
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Login</h2>
-        <Field label="Full Name" name="fullname" type="text" :value.sync="fullname"></Field>
-        <Field label="Phone Number" name="phoneNumber" type="tel" :value.sync="phoneNumber"></Field>
+        <div class="relative mb-4">
+          <label class="leading-7 text-sm text-primary"> Username </label>
+          <input id="username" type="email" v-model="username" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+        </div>
+        <div class="relative mb-4">
+          <label class="leading-7 text-sm text-primary"> Password </label>
+          <input id="password" type="password" v-model="password" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
+        </div>
         <button class="text-white bg-button border-0 py-2 px-8 focus:outline-none hover:bg-button rounded text-lg mt-10"  @click="loginClicked()">Login</button>
       </div>
     </div>
   </section>
 </template>
 <script>
-import Field from '@/components/Field.vue';
 
 export default {
   data() {
     return {
-      fullname: '',
-      phoneNumber: ''
+      username: '',
+      password: ''
     }
-  },
-  components: {
-    Field
   },
   methods: {
     loginClicked() {
-      console.log("login button clicked")
-    }
+      console.log("login button clicked", this.username, this.password)
+    },
   }
 }
 </script>

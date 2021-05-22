@@ -376,8 +376,9 @@ function getReturnObj(result, date) {
     // For a cook, for today's/tomorrow's meals, we must only count the meals that have a patient ID assigned, as the meals with no patient IDs are meals that the cook has pledged, but they do not need to cook.
     if (
       returnObj.user.user_type === 'Cook' &&
-      mealObj.meal_scheduled_for.getTime() === date.getTime() &&
-      !mealObj.meal_patient_id
+      (!mealObj.meal_scheduled_for ||
+        (!mealObj.meal_patient_id &&
+          mealObj.meal_scheduled_for.getTime() === date.getTime()))
     ) {
       continue;
     }

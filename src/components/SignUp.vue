@@ -5,7 +5,7 @@
         <h1 class="title-font font-medium text-3xl text-secondary">Healthy and Hearty Lunches Delivered to Your Doorstep.</h1>
         <p class="leading-relaxed mt-4 text-secondary">Spreading Hope, One Meal at a Time.</p>
       </div>
-      <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
+      <div  v-if="!user" class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Login Here</h2>
         <form ref="form" class="pt-3 mb-4">
           <div class="mb-4">
@@ -24,12 +24,9 @@
             <button @click="login()" class="rounded bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 focus:outline-none focus:shadow-outline" type="button">
               Sign In
             </button>
-            <a class="inline-block align-baseline font-bold text-sm text-blue-500 hover:text-blue-800" href="#">
-              Forgot Password?
-            </a>
           </div>
         </form>
-        <div v-if="failure">
+        <div v-if="failure" class="error-message">
           {{message}}
         </div>
       </div>
@@ -43,7 +40,8 @@ export default {
       username: '',
       password: '',
       failure: false,
-      message: ''
+      message: '',
+      user: JSON.parse(localStorage.getItem('user')),
     }
   },
   methods: {
@@ -61,7 +59,7 @@ export default {
             } else if (res.user.user_type === 'Cook') {
               window.location.href = '/cook'
             }
-          } else if (res === null) {
+          } else if (res && res.auth === false) {
             this.failure = true
             this.message = res.message
           }
@@ -76,3 +74,8 @@ export default {
   }
 }
 </script>
+<style scoped>
+  .error-message{
+    color:red;
+  }
+</style>

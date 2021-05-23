@@ -27,7 +27,6 @@ export default {
       const data = await asyncMiddleware(async function() {
         localStorage.removeItem('token')
         const { data } = await auth.login(payload)
-        debugger
         if (data.auth === true) {
           localStorage.setItem('user', JSON.stringify(data.user))
           localStorage.setItem('token', data.access_token)

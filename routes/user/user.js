@@ -257,10 +257,22 @@ module.exports = {
     }
   },
   logout: async (refreshToken, res) => {
-    if (refreshToken) {
-      delete refreshTokens[refreshToken];
+    try {
+      if (refreshToken) {
+        delete refreshTokens[refreshToken];
+      }
+      res.status(200).json({
+        result: true,
+        error: '',
+        message: 'User logged out successfully.',
+      });
+    } catch (error) {
+      res.status(400).json({
+        result: false,
+        error: error.message,
+        message: 'User log out failed.',
+      });
     }
-    res.sendStatus(204);
   },
   getLocalities: async (req, res) => {
     try {

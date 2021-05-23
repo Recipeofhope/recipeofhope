@@ -1,6 +1,6 @@
 <template>
   <div class="home">
-    <SignUp />
+    <LogIn />
     <HowItWorks />
     <Counter />
     <Team />
@@ -9,18 +9,18 @@
 
 <script>
 // @ is an alias to /src
-import SignUp from '@/components/SignUp.vue'
-import Team from '@/components/Team.vue'
-import Counter from '@/components/Counter.vue'
-import HowItWorks from '@/components/HowItWorks.vue'
+import LogIn from "@/components/LogIn.vue";
+import Team from "@/components/Team.vue";
+import Counter from "@/components/Counter.vue";
+import HowItWorks from "@/components/HowItWorks.vue";
 
 export default {
-  name: 'Home',
+  name: "Home",
   components: {
-    SignUp,
+    LogIn,
     Team,
     Counter,
-    HowItWorks
-  }
-}
+    HowItWorks,
+  },
+};
 </script>

@@ -9,7 +9,7 @@ const store = new Vuex.Store({
       accessToken: "",
       refreshToken: "",
     },
-    loginStatus:"",
+    loginStatus:false,
     user:{
       username: "",
       userType:"",
@@ -19,24 +19,17 @@ const store = new Vuex.Store({
     saveTokenData(state, data) {
       // TODO: delete this console.log since it contains senstivie info. 
       // I added this only for dev purposes
-      console.log("here: ", state, "\n", data)
+      console.log("index.js: ", state, "\n", data)
       localStorage.setItem("access_token", data.access_token);
       localStorage.setItem("refresh_token", data.refresh_token);
       localStorage.setItem("username", data.user.username);
       localStorage.setItem("userType", data.user.user_type)
   
-      const newTokenData = {
-        authData:{
-        accessToken: data.access_token,
-        refreshToken: data.refresh_token,
-        },
-        user:{
-          username: data.user.username,
-          userType: data.user.user_type,
-        },
-        loginStatus: true,
-      };
-      state.authData = newTokenData;
+      state.authData.accessToken = data.access_token
+      state.authData.refreshToken = data.refresh_token
+      state.user.username = data.user.username
+      state.user.userType = data.user.user_type
+      state.loginStatus = true
     },
   }
 });

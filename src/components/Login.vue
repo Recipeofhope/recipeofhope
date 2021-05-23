@@ -7,6 +7,9 @@
       </div>
       <div class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md">
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">Login</h2>
+        <p v-if="isLoginSuccessful === false" class="text-red-500">
+            Incorrect login details. Please try again
+        </p>
         <div class="relative mb-4">
           <label class="leading-7 text-sm text-primary"> Username </label>
           <input id="username" type="email" v-model="username" class="w-full bg-white rounded border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 text-base outline-none text-gray-700 py-1 px-3 leading-8 transition-colors duration-200 ease-in-out">
@@ -29,21 +32,32 @@ export default {
   data() {
     return {
       username: '',
-      password: ''
+      password: '',
+      isLoginSuccessful: ''
     }
   },
   methods: {
     async loginClicked() {
-      console.log("login button clicked", this.username, this.password)
       try{
         const response = await axios.post("https://recipeofhope.herokuapp.com/user/login", {
           username: this.username,
           password:this.password
       });
-      console.log("response: ", response)
       store.commit("saveTokenData", response.data);
+      if (!store.state.loginStatus === true){
+        this.isLoginSuccessful = false
+      }
+      else{
+        if(store.state.user.userType.toLowerCase() == "cook") {
+          this.$router.push('/cook');
+        }
+        else if(store.state.user.userType.toLowerCase() == "recipient") {
+          this.$router.push('/recipient');
+        }
+        
+      }
     } catch(error) {
-      // TODO: display error message
+      this.isLoginSuccessful = false
       console.log("error: ", error)
     }
   },

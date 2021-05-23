@@ -3,10 +3,12 @@ import App from './App.vue'
 import './index.css'
 import './assets/tailwind.css'
 import router from './router'
+import { store } from "./store"
 
 Vue.config.productionTip = false
 
 new Vue({
-  router,
-  render: h => h(App)
+	router,
+	store,
+	render: h => h(App)
 }).$mount('#app')

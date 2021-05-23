@@ -7,7 +7,6 @@
   "scripts": {
     "serve": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint",
     "start": "knex migrate:latest && node --icu-data-dir=node_modules/full-icu server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -35,11 +34,11 @@
     "twilio": "^3.62.0",
     "uuid": "^3.4.0",
     "vue": "^2.6.11",
-    "vue-router": "^3.2.0"
+    "vue-router": "^3.2.0",
+    "vuex": "^3.6.2"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
     "@vue/cli-plugin-router": "^4.5.12",
     "@vue/cli-service": "~4.5.0",
     "babel-eslint": "^10.1.0",

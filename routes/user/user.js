@@ -260,7 +260,7 @@ module.exports = {
     if (refreshToken) {
       delete refreshTokens[refreshToken];
     }
-    res.sendStatus(status);
+    res.sendStatus(204);
   },
   getLocalities: async (req, res) => {
     try {

@@ -8,11 +8,13 @@ const paths = [
   '/user/user-details:GET',
   '/user:PUT',
   '/cook/schedule:PUT',
+  '/cook/meals-ready:POST',
   '/patient/get-meals:GET',
   '/patient/book-meals:PUT',
   '/patient/cancel-meal:POST',
   '/patient/waitlist:POST',
-  '/cook/meals-ready:POST',
+  '/admin/unapproved-cooks:GET',
+  '/admin/approve-cooks:PATCH',
 ];
 
 var authFilter = async function(req, res, next) {

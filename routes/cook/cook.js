@@ -1,12 +1,16 @@
 const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
 
-
 module.exports = {
   scheduleMeals: async function(user, requestBody, res) {
     try {
       if (user.user_type !== 'Cook') {
         throw new Error('Only cooks can schedule meals.');
+      }
+      if (user.approved === false) {
+        throw new Error(
+          'Cook not yet approved. Please contact support or a volunteer'
+        );
       }
 
       if (!requestBody || requestBody.length === 0) {
@@ -60,6 +64,11 @@ module.exports = {
         throw new Error('Invalid user');
       } else if (decodedUser.user_type != 'Cook') {
         throw new Error('User type is not allowed to set meals as ready.');
+      }
+      if (decodedUser.approved === false) {
+        throw new Error(
+          'Cook not yet approved. Please contact support or a volunteer'
+        );
       }
 
       let getCookAddress = knex
@@ -196,6 +205,7 @@ async function sendPatientWhatsapp(
         '\n \nThe cook has prepared the *' +
         numMeals +
         '* meal(s) you requested. Please set up Dunzo/Swiggy Genie to get your food picked up.\n \nHappy eating and get well soon!\nRecipe of Hope Team',
-      to: 'whatsapp:+91' + patientDetails.phone_number
-    }.then((message) => console.log(message.sid)));
+      to: 'whatsapp:+91' + patientDetails.phone_number,
+    }.then((message) => console.log(message.sid))
+  );
 }

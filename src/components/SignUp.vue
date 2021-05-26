@@ -50,7 +50,7 @@ export default {
       formData.username = this.username
       formData.password = this.password
       try {
-        let res = await this.$store.dispatch('auth/USER_LOGIN', formData).then(res => {
+        await this.$store.dispatch('auth/USER_LOGIN', formData).then(res => {
           if (res && res.auth === true) {
             if (res.user.user_type === 'Admin') {
               window.location.href = '/admin'

@@ -33,9 +33,10 @@ module.exports = {
       }
       // Check if startDate occurs only 2 days after the current date.
       const twoDaysFromToday = DateTime.fromObject({
-        hour: 0,
         zone: 'Asia/Kolkata',
-      }).plus({ days: 2 });
+      })
+        .startOf('day')
+        .plus({ days: 2 });
       if (startDate < twoDaysFromToday) {
         throw new Error(
           'Cooks cannot change meals for today or tomorrow. Check the provided start date for the scheduled meals.'

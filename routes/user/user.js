@@ -345,7 +345,7 @@ async function getUserDetails(user) {
     );
   }
   const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
-  let date = DateTime.fromObject({ hour: 0, zone: 'Asia/Kolkata' });
+  let date = DateTime.fromObject({ zone: 'Asia/Kolkata' }).startOf('day');
   if (currentIndianDate.hour >= 20) {
     date = date.plus({ days: 1 });
   }

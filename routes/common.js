@@ -3,9 +3,10 @@ const knex = require('../data/db');
 module.exports = {
   getMealsForTomorrow: function() {
     const tomorrow = DateTime.fromObject({
-      hour: 0,
       zone: 'Asia/Kolkata',
-    }).plus({ days: 1 });
+    })
+      .startOf('day')
+      .plus({ days: 1 });
 
     //Getting available meals scheduled for tomorrow.
     let getMealsQuery = knex

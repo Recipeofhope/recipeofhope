@@ -73,7 +73,9 @@ module.exports = {
 
       const currentIndianDate = DateTime.now().setZone('Asia/Kolkata'); //;
       // if it is after 8 PM, we get every patient who joined the waitlist from midnight today till now.
-      let fromDate = DateTime.fromObject({ hour: 0, zone: 'Asia/Kolkata' });
+      let fromDate = DateTime.fromObject({ zone: 'Asia/Kolkata' }).startOf(
+        'day'
+      );
       if (currentIndianDate.hour < 20) {
         // if is before 8 PM, we get every patient who joined the waitlist from the previous day's midnight, till now.
         fromDate = fromDate.minus({ days: 1 });

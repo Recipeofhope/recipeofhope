@@ -131,9 +131,10 @@ module.exports = {
         }
 
         const tomorrow = DateTime.fromObject({
-          hour: 0,
           zone: 'Asia/Kolkata',
-        }).plus({ days: 1 });
+        })
+          .startOf('day')
+          .plus({ days: 1 });
         await mealBookingTimeCheck();
 
         await knex.transaction(async (tr) => {
@@ -194,9 +195,8 @@ module.exports = {
 
       // Get all meals, which have the given patients id and the given cook's id.
       const todayMidnight = DateTime.fromObject({
-        hour: 0,
         zone: 'Asia/Kolkata',
-      });
+      }).startOf('day');
       const meals = await knex
         .select('id', 'patient_id', 'scheduled_for', 'cancelled')
         .from('meal')
@@ -211,9 +211,8 @@ module.exports = {
 
       const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
       const tomorrowMidnight = DateTime.fromObject({
-        hour: 0,
         zone: 'Asia/Kolkata',
-      });
+      }).startOf('day');
       const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
         zone: 'Asia/Kolkata',
       });

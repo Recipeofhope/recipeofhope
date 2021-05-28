@@ -1,5 +1,6 @@
 const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
+const { DateTime } = require('luxon');
 
 module.exports = {
   scheduleMeals: async function(user, requestBody, res) {
@@ -16,19 +17,28 @@ module.exports = {
       if (!requestBody || requestBody.length === 0) {
         throw new Error('Missing request body with dates of scheduled meals.');
       }
-      const startDate = new Date(requestBody[0].date);
-      const endDate = new Date(requestBody[requestBody.length - 1].date);
+      const startDate = DateTime.fromISO(requestBody[0].date, {
+        zone: 'Asia/Kolkata',
+      });
+      const endDate = DateTime.fromISO(
+        requestBody[requestBody.length - 1].date,
+        {
+          zone: 'Asia/Kolkata',
+        }
+      );
       if (startDate > endDate) {
         throw new Error(
           ' Dates of the scheduled meals are not given in ascending order.'
         );
       }
       // Check if startDate occurs only 2 days after the current date.
-      const twoDaysFromToday = new Date();
-      twoDaysFromToday.setDate(twoDaysFromToday.getDate() + 1);
+      const twoDaysFromToday = DateTime.fromObject({
+        hour: 0,
+        zone: 'Asia/Kolkata',
+      }).plus({ days: 2 });
       if (startDate < twoDaysFromToday) {
         throw new Error(
-          'Cooks cannot cancel meals for today or tomorrow. Check the provided start date for the scheduled meals.'
+          'Cooks cannot change meals for today or tomorrow. Check the provided start date for the scheduled meals.'
         );
       }
 
@@ -44,7 +54,9 @@ module.exports = {
           // For each array item, prepare a meal row you can insert into the DB.
           const meal = {};
           meal.cook_id = user.id;
-          meal.scheduled_for = new Date(scheduledMeal.date);
+          meal.scheduled_for = DateTime.fromISO(scheduledMeal.date, {
+            zone: 'Asia/Kolkata',
+          });
           // Insert the row into the meal table 'x' no. of times, where x is the no, of meals scheduled by the cook for that date.
           for (let i = 0; i < scheduledMeal.number_of_meals; i++) {
             meal.id = uuidv4();
@@ -93,7 +105,7 @@ module.exports = {
       const updateResult = await knex('meal')
         .where({
           cook_id: decodedUser.id,
-          scheduled_for: new Date(),
+          scheduled_for: DateTime.now().setZone('Asia/Kolkata'),
           ready: false,
         })
         .update({ ready: true }, ['patient_id']);

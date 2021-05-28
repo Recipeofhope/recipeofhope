@@ -15,6 +15,7 @@ const paths = [
   '/patient/waitlist:POST',
   '/admin/unapproved-cooks:GET',
   '/admin/approve-cooks:PATCH',
+  '/admin/waitlist:GET',
 ];
 
 var authFilter = async function(req, res, next) {

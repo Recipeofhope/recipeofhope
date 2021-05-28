@@ -2,7 +2,7 @@ const knex = require('../../data/db');
 const bcrypt = require('bcrypt');
 const { v4: uuidv4 } = require('uuid');
 const jwt = require('jsonwebtoken');
-const { getCurrentIndianDate } = require('../common');
+const { DateTime } = require('luxon');
 const refreshTokens = {};
 
 module.exports = {
@@ -316,6 +316,7 @@ async function getUserDetails(user) {
       'user.username',
       'user.approved',
       'user.user_type',
+      'user.phone_number',
       'meal.ready AS meal_ready',
       'meal.scheduled_for AS meal_scheduled_for',
       'meal.cancelled as meal_cancelled',
@@ -343,12 +344,11 @@ async function getUserDetails(user) {
       'user.id'
     );
   }
-  const currentIndianDate = getCurrentIndianDate();
-  const date = new Date();
-  if (currentIndianDate.getHours >= 20) {
-    date.setDate(date.getUTCDate() + 1);
+  const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+  let date = DateTime.fromObject({ hour: 0, zone: 'Asia/Kolkata' });
+  if (currentIndianDate.hour >= 20) {
+    date = date.plus({ days: 1 });
   }
-  date.setHours(0, 0, 0, 0); // Set date to midnight, for subsequent comparisions with the dates fetched from the DB.
   let result = await getDetailsQuery
     .leftJoin('address', 'address.user_id', 'user.id')
     .leftJoin('locality', 'address.locality_id', 'locality.id')
@@ -390,7 +390,9 @@ function getReturnObj(result, date) {
       returnObj.user.user_type === 'Cook' &&
       (!mealObj.meal_scheduled_for ||
         (!mealObj.meal_patient_id &&
-          mealObj.meal_scheduled_for.getTime() === date.getTime()))
+          DateTime.fromISO(mealObj.meal_scheduled_for, {
+            zone: 'Asia/Kolkata',
+          }).toMillis() === date.toMillis()))
     ) {
       continue;
     }

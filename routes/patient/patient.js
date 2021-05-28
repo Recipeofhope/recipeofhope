@@ -1,6 +1,7 @@
 const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
-const { getCurrentIndianDate, getMealsForTomorrow } = require('../common');
+const { getMealsForTomorrow } = require('../common');
+const { DateTime } = require('luxon');
 
 module.exports = {
   getMeals: async function(cook, res) {
@@ -129,9 +130,11 @@ module.exports = {
           throw new Error('Missing request body with booking details.');
         }
 
-        const tomorrow = new Date();
-        mealBookingTimeCheck();
-        tomorrow.setDate(tomorrow.getUTCDate() + 1);
+        const tomorrow = DateTime.fromObject({
+          hour: 0,
+          zone: 'Asia/Kolkata',
+        }).plus({ days: 1 });
+        await mealBookingTimeCheck();
 
         await knex.transaction(async (tr) => {
           let success = 0;
@@ -190,8 +193,10 @@ module.exports = {
       const mealScheduledFor = reqBody.scheduled_for;
 
       // Get all meals, which have the given patients id and the given cook's id.
-      const todayMidnight = new Date();
-      todayMidnight.setHours(0, 0, 0, 0);
+      const todayMidnight = DateTime.fromObject({
+        hour: 0,
+        zone: 'Asia/Kolkata',
+      });
       const meals = await knex
         .select('id', 'patient_id', 'scheduled_for', 'cancelled')
         .from('meal')
@@ -204,15 +209,17 @@ module.exports = {
         );
       }
 
-      const currentIndianDate = getCurrentIndianDate();
-      const tomorrowMidnight = new Date();
-      tomorrowMidnight.setDate(tomorrowMidnight.getUTCDate() + 1);
-      tomorrowMidnight.setHours(0, 0, 0, 0);
-      const [YYYY, MM, DD] = mealScheduledFor.split('-');
-      const mealScheduledForDate = new Date(YYYY, MM - 1, DD);
+      const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+      const tomorrowMidnight = DateTime.fromObject({
+        hour: 0,
+        zone: 'Asia/Kolkata',
+      });
+      const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
+        zone: 'Asia/Kolkata',
+      });
 
-      if (mealScheduledForDate.getTime() === todayMidnight.getTime()) {
-        if (currentIndianDate.getHours() <= 10) {
+      if (mealScheduledForDate.toMillis() === todayMidnight.toMillis()) {
+        if (currentIndianDate.hour <= 10) {
           markMealsAsCancelled(meals, res, patient, cookId);
           return;
         } else {
@@ -221,14 +228,14 @@ module.exports = {
           );
         }
       } else if (
-        mealScheduledForDate.getTime() === tomorrowMidnight.getTime()
+        mealScheduledForDate.toMillis() === tomorrowMidnight.toMillis()
       ) {
-        if (currentIndianDate.getHours() >= 20) {
-          markMealsAsCancelled(meals, res, patient, cookId);
+        if (currentIndianDate.hour >= 20) {
+          await markMealsAsCancelled(meals, res, patient, cookId);
           return;
         } else {
-          // If the meal being cancelled is for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.
-          removePatientIdFromMeals(meals, res);
+          // If the meals being cancelled are for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.
+          await removePatientIdFromMeals(meals, res);
           return;
         }
       }
@@ -255,10 +262,12 @@ module.exports = {
       }
 
       // Check if patient has already joined the waitlist for today.
-      const currentIndianDate = getCurrentIndianDate();
       // set the date to midnight, as we are checking if the patient joined the waitlist between midnight and now.
-      currentIndianDate.setHours(0, 0, 0, 0);
-      const waitListJoinTime = new Date();
+      const currentIndianDate = DateTime.fromObject({
+        zone: 'Asia/Kolkata',
+        hour: 0,
+      });
+      const waitListJoinTime = DateTime.now().setZone('Asia/Kolkata');
       const patientResult = await knex
         .select('id')
         .from('waitlist')
@@ -379,11 +388,20 @@ async function markMealsAsCancelled(meals, res, patient, cookId) {
 }
 
 async function mealBookingTimeCheck() {
-  const date = getCurrentIndianDate();
+  const date = DateTime.now().setZone('Asia/Kolkata');
   // if is is after 8 PM, patient cannot book a meal.
-  if (date.getHours() >= 20) {
+  if (date.hour >= 20) {
     throw new Error(
       'Cannot book meals after 8 PM. Please consider joining the waitlist.'
     );
   }
+}
+async function removePatientIdFromMeals(meals, res) {
+  await knex.transaction(async (tr) => {
+    for (const meal of meals) {
+      await tr('meal')
+        .update('patient_id', null)
+        .where('id', meal.id);
+    }
+  });
 }

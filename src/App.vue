@@ -1,3 +1,4 @@
+/// <reference path="path/types.d.ts" />
 <template>
   <div id="app">
     <Header />

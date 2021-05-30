@@ -264,8 +264,7 @@ module.exports = {
       // set the date to midnight, as we are checking if the patient joined the waitlist between midnight and now.
       const currentIndianDate = DateTime.fromObject({
         zone: 'Asia/Kolkata',
-        hour: 0,
-      });
+      }).startOf('day');
       const waitListJoinTime = DateTime.now().setZone('Asia/Kolkata');
       const patientResult = await knex
         .select('id')

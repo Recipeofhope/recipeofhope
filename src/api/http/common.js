@@ -1,16 +1,16 @@
-import axios from 'axios'
+import axios from 'axios';
 
-const baseUrl = 'https://recipeofhope.herokuapp.com'
-const timeout = 600000
-const headers = {}
-const token = localStorage.getItem('token')
+const baseUrl = process.env.BASE_URL;
+const timeout = 600000;
+const headers = {};
+const token = localStorage.getItem('token');
 
-const options = { baseURL: baseUrl, timeout, headers }
+const options = { baseURL: baseUrl, timeout, headers };
 if (token) {
-  options.headers['Authorization'] = `Bearer ${token}`
+  options.headers['x-access-token'] = `${token}`;
   // options.headers['content-type'] = `multipart/form-data`
 }
 
-const commonAPI = axios.create(options)
+const commonAPI = axios.create(options);
 
-export default commonAPI
+export default commonAPI;

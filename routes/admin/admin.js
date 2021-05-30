@@ -11,11 +11,21 @@ module.exports = {
           'user.first_name',
           'user.last_name',
           'user.username',
-          'user.phone_number'
+          'user.phone_number',
+          'address.first_line',
+          'address.second_line',
+          'address.building_name',
+          'address.house_number',
+          'address.zipcode',
+          'address.state',
+          'address.city',
+          'locality.name AS locality_name'
         )
         .from('user')
         .where('user.user_type', 'Cook')
-        .andWhere('user.approved', false);
+        .andWhere('user.approved', false)
+        .leftJoin('address', 'address.user_id', 'user.id')
+        .leftJoin('locality', 'address.locality_id', 'locality.id');
 
       let resultCooks = await unapprovedCooksQuery;
 

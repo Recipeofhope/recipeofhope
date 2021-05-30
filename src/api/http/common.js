@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = 'http://localhost:3000'; // Change back to original heroku URL before committing. If you see this line on the main repo, we're in trouble.
+const baseUrl = 'https://recipeofhope.herokuapp.com';
 const timeout = 600000;
 const headers = {};
 const token = localStorage.getItem('token');

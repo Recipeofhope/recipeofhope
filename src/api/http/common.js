@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = 'https://recipeofhope.herokuapp.com/';
+const baseUrl = process.env.BASE_URL;
 const timeout = 600000;
 const headers = {};
 const token = localStorage.getItem('token');

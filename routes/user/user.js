@@ -280,7 +280,11 @@ module.exports = {
       if (!localities || localities.length === 0) {
         throw new Error('No localities found.');
       }
-      res.status(200).json({ localities });
+      const result = [];
+      for (const locality of localities) {
+        result.push(locality.name);
+      }
+      res.status(200).json({ result });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
@@ -292,6 +296,7 @@ async function getUserDetails(user) {
     const admin = await knex
       .select(
         'user.id',
+        'user.phone_number',
         'user.first_name',
         'user.last_name',
         'user.username',
@@ -368,6 +373,8 @@ function getReturnObj(result, date) {
     throw new Error('Error while fetching user details.');
   }
   returnObj.user = {};
+  returnObj.user.id = result[0].id;
+  returnObj.user.phone_number = result[0].phone_number;
   returnObj.user.first_name = result[0].first_name;
   returnObj.user.last_name = result[0].last_name;
   returnObj.user.username = result[0].username;

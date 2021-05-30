@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const baseUrl = 'https://recipe-of-ho-admin-ui-jm1ae2to.herokuapp.com';
+const baseUrl = 'https://recipeofhope.herokuapp.com/';
 const timeout = 600000;
 const headers = {};
 const token = localStorage.getItem('token');

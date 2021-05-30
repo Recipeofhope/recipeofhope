@@ -53,7 +53,7 @@ module.exports = {
 
       if (match) {
         const accessToken = jwt.sign(dbUser, process.env.ACCESS_TOKEN_SECRET, {
-          expiresIn: '15m',
+          expiresIn: '2h',
         });
         const refreshToken = jwt.sign(
           dbUser,
@@ -134,7 +134,7 @@ module.exports = {
           });
       });
       const accessToken = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '15m',
+        expiresIn: '2h',
       });
       const refreshToken = jwt.sign(user, process.env.REFRESH_TOKEN_SECRET, {
         expiresIn: '7 days',
@@ -230,7 +230,7 @@ module.exports = {
             decodedUser,
             process.env.ACCESS_TOKEN_SECRET,
             {
-              expiresIn: '15m',
+              expiresIn: '2h',
             }
           );
           res.json({

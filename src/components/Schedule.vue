@@ -2,8 +2,8 @@
   <!-- This example requires Tailwind CSS v2.0+ -->
   <div>
     <SectionHeading headingTxt="Your Schedule"></SectionHeading>
-    <Sch :today="todayCount" :tomorrow="tomorrowCount" />
-    <SectionHeading class="mt-20" headingTxt="Pick your meal slots" buttonTxt="Confirm Slots"></SectionHeading>
+    <Sch :today="today" :tomorrow="tomorrow" />
+    <SectionHeading class="mt-20" headingTxt="Pick your meal slots" buttonTxt="Confirm Slots" :buttonClick="confirmSlots"></SectionHeading>
     <div class="flex flex-col py-10">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -12,19 +12,19 @@
               <thead class="flex-1 bg-gray-50">
                 <tr>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Mon, May 3rd</p>
+                    <p>{{ future[0] ? future[0].date : '' }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Tue, May 2nd</p>
+                    <p>{{ future[1] ? future[1].date : '' }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Wed, May 3rd</p>
+                    <p>{{ future[2] ? future[2].date : '' }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Thu, May 4th</p>
+                    <p>{{ future[3] ? future[3].date : '' }}</p>
                   </th>
                   <th scope="col" class="px-3 py-4 text-center text-sm font-medium text-gray-500 uppercase tracking-wider">
-                    <p>Fri, May 5th</p>
+                    <p>{{ future[4] ? future[4].date : '' }}</p>
                   </th>
                 </tr>
               </thead>
@@ -32,19 +32,19 @@
                 <!-- Odd row -->
                 <tr class="bg-white flex-1">
                   <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
+                    <input class="text-center py-4 border" type="number" name="" id="" v-model="mealCount[0]">
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
+                    <input class="text-center py-4 border" type="number" name="" id=""  v-model="mealCount[1]">
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
+                    <input class="text-center py-4 border" type="number" name="" id=""  v-model="mealCount[2]">
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
+                    <input class="text-center py-4 border" type="number" name="" id="" v-model="mealCount[3]">
                   </td>
                   <td class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900">
-                    <input class="text-center py-4 border" type="text" name="" id="" value="1">
+                    <input class="text-center py-4 border" type="number" name="" id="" v-model="mealCount[4]">
                   </td>
                 </tr>
               </tbody>
@@ -60,19 +60,58 @@
 <script>
 import SectionHeading from '@/components/SectionHeading.vue';
 import Sch from '@/components/Sch.vue';
-
+import { format, parseISO } from 'date-fns'
 export default {
-  props: ['plan'],
+  data() {
+    const mealCount = new Array(5).fill(0);
+    return {
+      mealCount
+    }
+  },
+  props: ['schedule', 'days', 'daysArrStartIdx'],
   components: {
     SectionHeading,
     Sch
   },
   computed: {
-    todayCount() {
-      return this?.plan?.today?.length
+    today() {
+      const meals = this.schedule?.[this.days[this.daysArrStartIdx]] || [];
+      const date = this.days?.[this.daysArrStartIdx] || '';
+      return {
+        meals,
+        date
+      }
     },
-    tomorrowCount() {
-      return this?.plan?.tomorrow?.length
+    tomorrow() {
+      const meals = this.schedule?.[this.days[this.daysArrStartIdx + 1]] || [];
+      const date = this.days?.[this.daysArrStartIdx + 1] || '';
+      return {
+        meals,
+        date
+      }
+    },
+    future() {
+      const remaining = [];
+      const days = this.days || [];
+      for (let i = this.daysArrStartIdx + 2; i < days.length; i++) {
+        const date = days[i] ? format(parseISO(days[i]), 'E, MMM do') : '';
+        const meals = this.schedule?.[days[i]] || []
+        remaining.push({
+          meals: meals,
+          date: date,
+        });        
+      }
+      return remaining;
+    }
+  },
+  watch: {
+    future() {
+      this.mealCount = this.future.map(item => item.meals.length);
+    }
+  },
+  methods: {
+    confirmSlots() {
+      console.log(this);
     }
   }
 }

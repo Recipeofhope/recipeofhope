@@ -1,9 +1,9 @@
 <template>
   <div class="container px-5 py-24 mx-auto" v-if="cook">
     <ProfileHeading :name="cook.name" :type="cook.type" class="-mt-10 mb-12" />
-    <Stats class="my-20" :type="cook.type" />
-    <Schedule :plan="cook.schedule" />
-    <Details :name="cook.name" :details="cook.address"/>
+    <!-- <Stats class="my-20" :type="cook.type" /> -->
+    <Schedule :schedule="cook.schedule" :days="cook.days" :daysArrStartIdx="cook.daysArrStartIdx" />
+    <Details :fName="cook.fName" :lName="cook.lName" :details="cook.address" userType="Volunteer Cook" :userId="cook.userId"/>
   </div>
 </template>
 <script>
@@ -13,26 +13,19 @@ import Schedule from '@/components/Schedule.vue'
 import Stats from '@/components/Stats.vue'
 
 import axios from 'axios'
-import { isToday, isTomorrow, parseISO } from 'date-fns'
+import { isBefore, parseISO } from 'date-fns'
 
 export default {
   data() {
     return {
-      cookID: '123',
       cook: {
         name: '',
         type: '',
-        address: {
-          address_line_1: '',
-          address_line_2: '',
-          phone_number: '',
-          city: '',
-          zipcode: ''
-        }
-      },
-      schedule: {
-        today: 0,
-        tomorrow: 0
+        id: '',
+        address: {},
+        days: [],
+        schedule: {},
+        daysArrStartIdx: 0
       }
     }
   },
@@ -48,25 +41,29 @@ export default {
   methods: {
     async getCookData() {
       try {
-        let { data } = await axios.get(`https://609e8e8133eed80017958cad.mockapi.io/cook/${(Math.floor(Math.random() * 30) + 1)}`);
-        this.cook.name = data.name
-        this.cook.type = data.type
-        this.cook.address = {
-          address_line_1: data.address_line_1,
-          address_line_2: data.address_line_2,
-          city: data.city,
-          zipcode: data.zipcode,
-          phone_number: data.phone_number,
-        }
-        this.cook.schedule = {
-          today: data.meals.filter(m => {
-            console.log(m.date, parseISO(m.date));
-            return isToday(parseISO(m.date))
-          }),
-          tomorrow: data.meals.filter(m => isTomorrow(parseISO(m.date)))
-        }
+        let { data } = await axios.post('http://recipeofhope.herokuapp.com/user/login', {
+          "username":"pankajhasija-c1",
+          "password":"password"
+        });
 
-        console.log(this.cook.schedule);
+        let userId = data && data.user ? data.user.id : '';
+        let fName = data && data.user ? data.user.first_name : '';
+        let lName = data && data.user ? data.user.last_name : '';
+        let type = data && data.user ? data.user.user_type : '';
+        const address = data && data.address ? data.address : {};
+        const schedule = data && data.meals ? data.meals : {};
+        const days = Object.keys(schedule);
+
+        days.sort((d1, d2) => isBefore(parseISO(d2), parseISO(d1)) ? 1 : -1);
+
+        this.cook.userId = userId;
+        this.cook.fName = fName;
+        this.cook.lName = lName;
+        this.cook.type = type;
+        this.cook.address = { ...address };
+        this.cook.schedule = schedule;
+        this.cook.days = days;
+        this.cook.daysArrStartIdx = days.length === 6 ? -1 : 0;
       } catch (error) {
         console.log(error);
       }

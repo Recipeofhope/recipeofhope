@@ -35,7 +35,11 @@ var authFilter = async function(req, res, next) {
       req.decodedUser = user;
     } catch (error) {
       console.log(`Rejected request for path : ${path}. Authorization failed.`);
-      res.status(401).json({ message: error.message });
+      if (error.name === 'TokenExpiredError') {
+        res.status(400).json({ message: 'TOKEN_EXPIRED' });
+      } else {
+        res.status(401).json({ message: error.message });
+      }
       return;
     }
   }

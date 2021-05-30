@@ -62,16 +62,18 @@
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {{ cook.building_name }}
                     <br v-if="cook.building_name" />
+                    {{ cook.locality_name }}
+                    <br v-if="cook.locality_name" />
                     {{ cook.first_line }}
                     <br v-if="cook.first_line" />
                     {{ cook.second_line }}
                     <br v-if="cook.second_line" />
-                    {{ cook.state }}
-                    <br v-if="cook.state" />
                     {{ cook.city }}
                     <br v-if="cook.city" />
                     {{ cook.zipcode }}
                     <br v-if="cook.zipcode" />
+                    {{ cook.state }}
+                    <br v-if="cook.state" />
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <input

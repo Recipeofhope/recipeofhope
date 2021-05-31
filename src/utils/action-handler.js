@@ -11,7 +11,6 @@ export default async function asyncMiddleware(
     res = await handler();
     dispatch('handleSuccess', { type: id, res, toaster }, { root: true });
   } catch (error) {
-    console.log(error);
     if (error.response) {
       res = error.response.data;
     }

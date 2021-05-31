@@ -1,5 +1,5 @@
 <template>
-  <div class="container px-5 py-24 mx-auto">
+  <div class="container px-5 py-5 mx-auto">
     <div class="flex flex-col">
       <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
@@ -14,67 +14,18 @@
             <table class="min-w-full divide-y divide-gray-200">
               <thead class="bg-gray-50">
                 <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Username
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Phone Number
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Address
-                  </th>
+                  <UserDetailHeadings />
                   <th scope="col" class="relative px-6 py-3"></th>
                 </tr>
               </thead>
               <tbody>
                 <!-- Odd row -->
                 <tr
-                  :class="cook.id % 2 ? 'bg-gray-50' : 'bg-white'"
-                  v-for="cook in cooksFilter()"
+                  :class="idx % 2 === 1 ? 'bg-gray-50' : 'bg-white'"
+                  v-for="(cook, idx) in cooksFilter()"
                   :key="cook.id"
                 >
-                  <td
-                    class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900"
-                  >
-                    {{ cook.first_name }} {{ cook.last_name }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ cook.username }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ cook.phone_number }}
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {{ cook.building_name }}
-                    <br v-if="cook.building_name" />
-                    {{ cook.locality_name }}
-                    <br v-if="cook.locality_name" />
-                    {{ cook.first_line }}
-                    <br v-if="cook.first_line" />
-                    {{ cook.second_line }}
-                    <br v-if="cook.second_line" />
-                    {{ cook.city }}
-                    <br v-if="cook.city" />
-                    {{ cook.zipcode }}
-                    <br v-if="cook.zipcode" />
-                    {{ cook.state }}
-                    <br v-if="cook.state" />
-                  </td>
+                  <UserDetails v-bind:user="cook" />
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     <input
                       type="checkbox"
@@ -109,8 +60,10 @@
     />
   </div>
 </template>
-<script>
+<script lang="js">
   import SuccessErrorModal from '@/components/SuccessErrorModal.vue';
+  import UserDetails from '@/components/admin/UserDetails.vue';
+  import UserDetailHeadings from '@/components/admin/UserDetailHeadings.vue';
 
   export default {
     data() {
@@ -183,7 +136,7 @@
       },
     },
     components: {
-      SuccessErrorModal,
+      SuccessErrorModal, UserDetails, UserDetailHeadings
     },
   };
 </script>

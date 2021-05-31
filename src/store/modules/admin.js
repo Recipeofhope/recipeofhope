@@ -20,6 +20,19 @@ export default {
       );
       return data;
     },
+    async GET_WAITLIST({ commit, dispatch }) {
+      const data = await asyncMiddleware(
+        async function() {
+          const data = await admin.getWaitlist();
+          return data;
+        },
+        commit,
+        dispatch,
+        'GET_WAITLIST',
+        true
+      );
+      return data;
+    },
     async APPROVE_COOKS({ commit, dispatch }, payload) {
       const data = await asyncMiddleware(
         async function() {

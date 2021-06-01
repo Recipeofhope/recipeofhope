@@ -1,17 +1,17 @@
-import user from '../../api/collections/user';
+import cook from '../../api/collections/cook';
 import asyncMiddleware from '../../utils/action-handler';
 
 export default {
   namespaced: true,
   actions: {
-    async UPDATE_USER_INFO({ commit, dispatch }, payload) {
+    async UPDATE_SCHEDULE({ commit, dispatch }, payload) {
       const data = await asyncMiddleware(
         async function() {
-          return await user.updateUserInfo(payload.id, payload.body);
+          return await cook.updateCookSchedule(payload);
         },
         commit,
         dispatch,
-        'UPDATE_USER_INFO',
+        'UPDATE_SCHEDULE',
         true
       );
       return data;

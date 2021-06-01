@@ -1,45 +1,19 @@
 <template>
   <div v-if="details">
     <!-- This example requires Tailwind CSS v2.0+ -->
-    <div
-      class="py-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between"
-    >
-      <h3 class="text-lg leading-6 font-medium text-gray-900">
-        Your Details
-      </h3>
-      <div class="mt-3 sm:mt-0 sm:ml-4">
-        <button
-          type="button"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
-          v-if="!editMode"
-          @click="toggleEdit"
-        >
-          Edit
-        </button>
-        <button
-          type="button"
-          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
-          v-if="editMode"
-          @click="save"
-        >
-          Save
-        </button>
-      </div>
-    </div>
+    <SectionHeading
+      v-if="!editMode"
+      headingTxt="Your Details"
+      buttonTxt="Edit"
+      :buttonClick="toggleEdit"
+    ></SectionHeading>
+    <SectionHeading
+      v-if="editMode"
+      headingTxt="Your Details"
+      buttonTxt="Save"
+      :buttonClick="save"
+    ></SectionHeading>
     <div class="bg-white shadow-md overflow-hidden sm:rounded-lg">
-      <!-- <div class="flex sm:justify-between px-4 py-5 sm:px-6">
-        <div>
-          <h3 class="text-lg leading-6 font-medium text-gray-900">
-            Your Details
-          </h3>
-          <p class="mt-1 max-w-2xl text-sm text-gray-500">
-            Personal information and application.
-          </p>
-        </div>
-        <button type="button" class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-primary hover:bg-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary">
-          Edit
-        </button>
-      </div> -->
       <div class="border-gray-200 px-4 py-5 sm:p-0">
         <dl class="sm:divide-y sm:divide-gray-200">
           <div class="py-4 sm:py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -301,6 +275,7 @@
 </template>
 <script>
   import SuccessErrorModal from '@/components/SuccessErrorModal.vue';
+  import SectionHeading from '@/components/SectionHeading.vue';
 
   export default {
     data() {
@@ -419,6 +394,7 @@
     },
     components: {
       SuccessErrorModal,
+      SectionHeading,
     },
   };
 </script>

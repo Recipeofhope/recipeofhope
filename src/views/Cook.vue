@@ -1,12 +1,8 @@
 <template>
   <div class="container px-5 py-24 mx-auto" v-if="cook">
-    <ProfileHeading :name="cook.name" :type="cook.type" class="-mt-10 mb-12" />
+    <ProfileHeading :name="cook.fName" :type="cook.type" class="-mt-10 mb-12" />
     <!-- <Stats class="my-20" :type="cook.type" /> -->
-    <Schedule
-      :schedule="cook.schedule"
-      :days="cook.days"
-      :daysArrStartIdx="cook.daysArrStartIdx"
-    />
+    <Schedule :schedule="cook.schedule" />
     <Details
       :fName="cook.fName"
       :lName="cook.lName"
@@ -28,7 +24,7 @@
     data() {
       return {
         cook: {
-          name: '',
+          fName: '',
           type: '',
           id: '',
           address: {},
@@ -74,7 +70,6 @@
           this.cook.address = { ...address };
           this.cook.schedule = schedule;
           this.cook.days = days;
-          this.cook.daysArrStartIdx = days.length === 6 ? -1 : 0;
         } catch (error) {
           console.log(error);
         }

@@ -335,7 +335,12 @@ async function getUserDetails(user) {
       'address.city AS address_city',
       'locality.name AS address_locality'
     )
-    .from('user');
+    .from('user')
+    .where(
+      'meal.scheduled_for',
+      '>=',
+      DateTime.fromObject({ zone: 'Asia/Kolkata' }).startOf('day')
+    );
   if (user.user_type === 'Cook') {
     getDetailsQuery = getDetailsQuery.leftJoin(
       'meal',

@@ -12,7 +12,7 @@ export default async function asyncMiddleware(
     dispatch('handleSuccess', { type: id, res, toaster }, { root: true });
   } catch (error) {
     if (error.response) {
-      res = error.response.data;
+      res = error.response;
     }
     if (res.message === 'jwt expired') {
       // we must get a new access and refresh token, and retry the original call.

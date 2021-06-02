@@ -37,7 +37,6 @@ export default {
   },
   actions: {
     async USER_LOGIN({ commit, dispatch }, payload) {
-      console.log('server baseURL: ' + process.env.VUE_APP_BASE_URL);
       const data = await asyncMiddleware(
         async function() {
           localStorage.removeItem('token');
@@ -70,6 +69,8 @@ export default {
         async function() {
           const { data } = await auth.logout(payload);
           localStorage.removeItem('user');
+          localStorage.removeItem('address');
+          localStorage.removeItem('meals');
           localStorage.removeItem('token');
           localStorage.removeItem('role');
           return data;

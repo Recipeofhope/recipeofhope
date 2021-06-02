@@ -106,9 +106,12 @@ module.exports = {
       const updateResult = await knex('meal')
         .where({
           cook_id: decodedUser.id,
-          scheduled_for: DateTime.now().setZone('Asia/Kolkata'),
+          scheduled_for: DateTime.now()
+            .setZone('Asia/Kolkata')
+            .startOf('day'),
           ready: false,
         })
+        .whereNotNull('patient_id')
         .update({ ready: true }, ['patient_id']);
 
       if (updateResult.length === 0) {
@@ -171,14 +174,16 @@ async function sendCookWhatsapp(decodedUser, allPatientDetails) {
 
   var twilio = require('twilio');
   var client = new twilio(accountSid, authToken);
-  client.messages.create({
-    from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
-    body:
-      'Hi! Thank you so much for volunteering with Recipe of Hope. The following recipients will send a delivery executive from Swiggy Genie/Dunzo to pick up food from your address: \n\n' +
-      patientStr +
-      'The recipients may call/whatsapp you to ensure smooth delivery of meals. Please reach out to a Recipe of Hope volunteer if you have any further questions.\n\nThanks!\nRecipe of Hope Team',
-    to: 'whatsapp:+91' + decodedUser.phone_number,
-  });
+  client.messages
+    .create({
+      from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
+      body:
+        'Hi! Thank you so much for volunteering with Recipe of Hope. The following recipients will send a delivery executive from Swiggy Genie/Dunzo to pick up food from your address: \n\n' +
+        patientStr +
+        'The recipients may call/whatsapp you to ensure smooth delivery of meals. Please reach out to a Recipe of Hope volunteer if you have any further questions.\n\nThanks!\nRecipe of Hope Team',
+      to: 'whatsapp:+91' + decodedUser.phone_number,
+    })
+    .then((message) => console.log(message.sid));
 }
 
 async function sendPatientWhatsapp(
@@ -191,8 +196,8 @@ async function sendPatientWhatsapp(
   var authToken = process.env.TWILIO_AUTH_TOKEN;
   var twilio = require('twilio');
   var client = new twilio(accountSid, authToken);
-  client.messages.create(
-    {
+  client.messages
+    .create({
       from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
       body:
         "Hi! We hope you're hungry because your food is ready.\n \nYour cook details are:\n\nName: " +
@@ -219,6 +224,6 @@ async function sendPatientWhatsapp(
         numMeals +
         '* meal(s) you requested. Please set up Dunzo/Swiggy Genie to get your food picked up.\n \nHappy eating and get well soon!\nRecipe of Hope Team',
       to: 'whatsapp:+91' + patientDetails.phone_number,
-    }.then((message) => console.log(message.sid))
-  );
+    })
+    .then((message) => console.log(message.sid));
 }

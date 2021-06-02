@@ -370,6 +370,10 @@
             this.showModal = true;
             this.title = 'Successfully updated user';
             this.toggleEdit();
+          } else {
+            this.title = 'Error';
+            this.error = true;
+            this.message = res.data?.message;
           }
         } catch (e) {
           console.log('Failed to update user details');

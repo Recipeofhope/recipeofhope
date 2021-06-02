@@ -1,6 +1,8 @@
 <template>
   <div
-    class="pb-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between"
+    class="pb-5 border-b border-gray-200 sm:flex sm:items-center sm:justify-between "
+    style="display: flex;
+justify-content: space-between;"
   >
     <h3 class="text-lg leading-6 font-medium text-gray-900">
       {{ headingTxt }}

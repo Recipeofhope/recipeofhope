@@ -39,54 +39,11 @@
                       class="text-center py-4 border"
                       type="number"
                       name="date"
+                      :min="0"
                       id="date"
                       v-model="mealDateToCount[date]"
                     />
                   </td>
-                  <!-- <td
-                    class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900"
-                  >
-                    <input
-                      class="text-center py-4 border"
-                      type="number"
-                      name=""
-                      id=""
-                      v-model="mealCount[1]"
-                    />
-                  </td>
-                  <td
-                    class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900"
-                  >
-                    <input
-                      class="text-center py-4 border"
-                      type="number"
-                      name=""
-                      id=""
-                      v-model="mealCount[2]"
-                    />
-                  </td>
-                  <td
-                    class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900"
-                  >
-                    <input
-                      class="text-center py-4 border"
-                      type="number"
-                      name=""
-                      id=""
-                      v-model="mealCount[3]"
-                    />
-                  </td>
-                  <td
-                    class="px-3 py-4 whitespace-nowrap text-center text-sm font-medium text-gray-900"
-                  >
-                    <input
-                      class="text-center py-4 border"
-                      type="number"
-                      name=""
-                      id=""
-                      v-model="mealCount[4]"
-                    />
-                  </td> -->
                 </tr>
               </tbody>
             </table>
@@ -109,6 +66,7 @@
 <script>
   import SectionHeading from '@/components/SectionHeading.vue';
   import Sch from '@/components/Sch.vue';
+  import SuccessErrorModal from '@/components/SuccessErrorModal.vue';
   import { DateTime } from 'luxon';
   export default {
     data() {
@@ -132,19 +90,74 @@
         message: '',
       };
     },
+    watch: {
+      schedule() {
+        for (const date in this.mealDateToCount) {
+          if (date in this.schedule) {
+            this.mealDateToCount[date] = this.schedule[date].length;
+          }
+        }
+        const date = DateTime.now().setZone('Asia/Kolkata');
+        const today = date.toISODate();
+        const tomorrow = date.plus({ days: 1 }).toISODate();
+        if (today in this.schedule) {
+          this.mealsToday = this.schedule[today].length;
+        }
+        if (tomorrow in this.schedule) {
+          this.mealsTomorrow = this.schedule[tomorrow].length;
+        }
+      },
+    },
     props: ['schedule'],
     components: {
       SectionHeading,
       Sch,
+      SuccessErrorModal,
     },
     methods: {
       async confirmSlots() {
-        const res = await this.$store.dispatch(
-          'cook/UPDATE_SCHEDULE',
-          this.mealDateToCount
-        );
+        // Do validation on meal counts.
+        for (const date in this.mealDateToCount) {
+          if (isNaN(this.mealDateToCount[date])) {
+            this.showModal = true;
+            this.title = 'Error';
+            this.error = true;
+            this.message = 'Please enter only numbers for meal slots.';
+            return;
+          }
+          if (this.mealDateToCount[date] < 0) {
+            this.showModal = true;
+            this.title = 'Error';
+            this.error = true;
+            this.message = 'Meal slots cannot be negative.';
+          }
+        }
+
+        //Transform mealDateTocount to expected request body.
+        const payload = [];
+        for (let date in this.mealDateToCount) {
+          const obj = {};
+          obj[date.toString()] = this.mealDateToCount[date];
+          payload.push({
+            date: date,
+            number_of_meals: this.mealDateToCount[date],
+          });
+        }
+        payload.sort((a, b) => {
+          const d1 = DateTime.fromISO(a.date);
+          const d2 = DateTime.fromISO(b.date);
+          if (d1.toMillis() === d2.toMillis()) {
+            return 0;
+          } else if (d1 < d2) {
+            return -1;
+          } else {
+            return 1;
+          }
+        });
+        const res = await this.$store.dispatch('cook/UPDATE_SCHEDULE', payload);
         this.showModal = true;
-        if (res.status === 200) {
+        if (res.status === 204) {
+          this.showModal = true;
           this.title = 'Slots updated succesfully';
         } else {
           this.title = 'Error';

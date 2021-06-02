@@ -335,12 +335,7 @@ async function getUserDetails(user) {
       'address.city AS address_city',
       'locality.name AS address_locality'
     )
-    .from('user')
-    .where(
-      'meal.scheduled_for',
-      '>=',
-      DateTime.fromObject({ zone: 'Asia/Kolkata' }).startOf('day')
-    );
+    .from('user');
   if (user.user_type === 'Cook') {
     getDetailsQuery = getDetailsQuery.leftJoin(
       'meal',
@@ -402,9 +397,7 @@ function getReturnObj(result, date) {
       returnObj.user.user_type === 'Cook' &&
       (!mealObj.meal_scheduled_for ||
         (!mealObj.meal_patient_id &&
-          DateTime.fromISO(mealObj.meal_scheduled_for, {
-            zone: 'Asia/Kolkata',
-          }).toMillis() === date.toMillis()))
+          mealObj.meal_scheduled_for.getTime() === date.toMillis()))
     ) {
       continue;
     }

@@ -2,6 +2,7 @@ import Vue from 'vue';
 import Vuex from 'vuex';
 import admin from './modules/admin';
 import auth from './modules/auth';
+import cook from './modules/cook';
 import user from './modules/user';
 
 Vue.use(Vuex);
@@ -112,6 +113,7 @@ export const store = new Vuex.Store({
   modules: {
     auth,
     admin,
-    user
+    user,
+    cook,
   },
 });

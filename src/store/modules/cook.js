@@ -16,5 +16,17 @@ export default {
       );
       return data;
     },
+    async MARK_MEALS_AS_READY({ commit, dispatch }, payload) {
+      const data = await asyncMiddleware(
+        async function() {
+          return await cook.markMealsAsReady(payload);
+        },
+        commit,
+        dispatch,
+        'MARK_MEALS_AS_READY',
+        true
+      );
+      return data;
+    },
   },
 };

@@ -397,9 +397,7 @@ function getReturnObj(result, date) {
       returnObj.user.user_type === 'Cook' &&
       (!mealObj.meal_scheduled_for ||
         (!mealObj.meal_patient_id &&
-          DateTime.fromISO(mealObj.meal_scheduled_for, {
-            zone: 'Asia/Kolkata',
-          }).toMillis() === date.toMillis()))
+          mealObj.meal_scheduled_for.getTime() === date.toMillis()))
     ) {
       continue;
     }

@@ -8,11 +8,21 @@ export default {
       localStorage.getItem('user') != null
         ? JSON.parse(localStorage.getItem('user'))
         : null,
+    currentAddress:
+      localStorage.getItem('address') != null
+        ? JSON.parse(localStorage.getItem('address'))
+        : null,
+    currentMeals:
+      localStorage.getItem('meals') != null
+        ? JSON.parse(localStorage.getItem('meals'))
+        : null,
     token: '',
     userRole: '',
   },
   getters: {
     currentUser: (state) => state.currentUser,
+    currentAddress: (state) => state.currentAddress,
+    currentMeals: (state) => state.currentMeals,
   },
   mutations: {
     setUser(state, payload) {
@@ -27,13 +37,18 @@ export default {
   },
   actions: {
     async USER_LOGIN({ commit, dispatch }, payload) {
-      console.log('server baseURL: ' + process.env.VUE_APP_BASE_URL);
       const data = await asyncMiddleware(
         async function() {
           localStorage.removeItem('token');
           const { data } = await auth.login(payload);
           if (data.auth === true) {
             localStorage.setItem('user', JSON.stringify(data.user));
+            if (data.address) {
+              localStorage.setItem('address', JSON.stringify(data.address));
+            }
+            if (data.meals) {
+              localStorage.setItem('meals', JSON.stringify(data.meals));
+            }
             localStorage.setItem('token', data.access_token);
             localStorage.setItem('role', data.user.user_type);
             commit('setUser', JSON.stringify(data.user));
@@ -54,6 +69,8 @@ export default {
         async function() {
           const { data } = await auth.logout(payload);
           localStorage.removeItem('user');
+          localStorage.removeItem('address');
+          localStorage.removeItem('meals');
           localStorage.removeItem('token');
           localStorage.removeItem('role');
           return data;

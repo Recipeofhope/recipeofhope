@@ -1,6 +1,7 @@
 const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
 const { DateTime } = require('luxon');
+var cron = require('node-cron');
 
 module.exports = {
   scheduleMeals: async function(user, requestBody, res) {
@@ -224,6 +225,72 @@ async function sendPatientWhatsapp(
         numMeals +
         '* meal(s) you requested. Please set up Dunzo/Swiggy Genie to get your food picked up.\n \nHappy eating and get well soon!\nRecipe of Hope Team',
       to: 'whatsapp:+91' + patientDetails.phone_number,
+    })
+    .then((message) => console.log(message.sid));
+}
+
+cron.schedule(
+  '1 20 * * *',
+  async () => {
+    // get all cooks, who have a meal scheduled for tomorrow, with a non null patient id.
+    try {
+      const results = await knex
+        .select('user.id AS cook_id', 'user.phone_number', 'meal.patient_id')
+        .count('meal.id')
+        .from('user')
+        .innerJoin('meal', 'user.id', 'meal.cook_id')
+        .where('user.user_type', 'Cook')
+        .whereNotNull('meal.patient_id')
+        .andWhere(
+          'meal.scheduled_for',
+          DateTime.fromObject({ zone: 'Asia/Kolkata' })
+            .startOf('day')
+            .plus({ days: 1 })
+        )
+        .groupBy('user.id', 'meal.patient_id');
+      const cooks = {};
+      for (const result of results) {
+        if (!(result.cook_id in cooks)) {
+          cooks[result.cook_id] = {};
+          cooks[result.cook_id]['phone_number'] = result.phone_number;
+          cooks[result.cook_id]['number_of_meals'] = 0;
+        }
+        cooks[result.cook_id]['number_of_meals'] += parseInt(result.count);
+      }
+      for (const cook in cooks) {
+        await sendCookWhatsappForTomorrowsMeals(cooks[cook]);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  },
+  {
+    scheduled: true,
+    timezone: 'Asia/Kolkata',
+  }
+);
+
+async function sendCookWhatsappForTomorrowsMeals(cook) {
+  var accountSid = process.env.TWILIO_ACCOUNT_SID;
+  var authToken = process.env.TWILIO_AUTH_TOKEN;
+
+  var twilio = require('twilio');
+  var client = new twilio(accountSid, authToken);
+  client.messages
+    .create({
+      from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
+      body:
+        'Hi,\n\nThank you for volunteering with Recipe of Hope. This is a reminder that you have *' +
+        cook.number_of_meals +
+        '* meals due tomorrow (' +
+        DateTime.now()
+          .setZone('Asia/Kolkata')
+          .plus({ days: 1 })
+          .startOf('day')
+          .setLocale('en-US')
+          .toFormat('ccc, LLL dd') +
+        '). Note that this number may be less than the no. of meals you have pledged earlier, since all meals pledged by you may not have been booked.\n\nOnce your meals are ready, log on to the website, and mark your meals as ready on your profile page. This allows recipients to be alerted of meal availability, and allows them to book the meals through delivery platforms on a timely manner.\n\nPlease reach out to any of our volunteers if you have any questions.\n\nRegards,\nRecipe of Hope Team',
+      to: 'whatsapp:+91' + cook.phone_number,
     })
     .then((message) => console.log(message.sid));
 }

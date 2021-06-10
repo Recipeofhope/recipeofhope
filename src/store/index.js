@@ -3,6 +3,7 @@ import Vuex from 'vuex';
 import admin from './modules/admin';
 import auth from './modules/auth';
 import cook from './modules/cook';
+import patient from './modules/patient';
 import user from './modules/user';
 
 Vue.use(Vuex);
@@ -115,5 +116,6 @@ export const store = new Vuex.Store({
     admin,
     user,
     cook,
+    patient,
   },
 });

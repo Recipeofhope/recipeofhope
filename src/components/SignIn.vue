@@ -14,7 +14,7 @@
         class="lg:w-2/6 md:w-1/2 bg-gray-100 rounded-lg p-8 flex flex-col md:ml-auto w-full mt-10 md:mt-0 shadow-md"
       >
         <h2 class="text-gray-900 text-lg font-medium title-font mb-5">
-          Login Here
+          Login
         </h2>
         <form ref="form" class="pt-3 mb-4">
           <div class="mb-4">

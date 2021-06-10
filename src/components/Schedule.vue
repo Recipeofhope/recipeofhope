@@ -130,6 +130,7 @@
             this.title = 'Error';
             this.error = true;
             this.message = 'Meal slots cannot be negative.';
+            return;
           }
         }
 

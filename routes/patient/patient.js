@@ -161,13 +161,13 @@ module.exports = {
               var result = await tr('meal')
                 .update({ patient_id: cook.id })
                 .where('meal.id', '=', resultMeals[j].id);
+              success += result;
             }
 
-            success += result;
             totalMeals += requestBody[i].number_of_meals;
           }
 
-          if (success == totalMeals)
+          if (success === totalMeals)
             res.status(200).json({ message: 'Success! All meals booked.' });
           //return Json('Success! All meals booked.');
           else if (success > 0 && success < totalMeals)

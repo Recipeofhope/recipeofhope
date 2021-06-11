@@ -9,7 +9,12 @@ module.exports = {
       if (user.user_type !== 'Cook') {
         throw new Error('Only cooks can schedule meals.');
       }
-      if (user.approved === false) {
+      // get the user details fresh from the DB.
+      const dbCookUser = await knex('user')
+        .select('approved')
+        .where('id', user.id)
+        .first();
+      if (dbCookUser.approved === false) {
         throw new Error(
           'Cook not yet approved. Please contact support or a volunteer'
         );
@@ -79,7 +84,13 @@ module.exports = {
       } else if (decodedUser.user_type != 'Cook') {
         throw new Error('User type is not allowed to set meals as ready.');
       }
-      if (decodedUser.approved === false) {
+      // get the user details fresh from the DB.
+      const dbCookUser = await knex('user')
+        .select('phone_number', 'first_name', 'last_name', 'approved')
+        .where('id', decodedUser.id)
+        .first();
+
+      if (dbCookUser.approved === false) {
         throw new Error(
           'Cook not yet approved. Please contact support or a volunteer'
         );
@@ -140,12 +151,12 @@ module.exports = {
         await sendPatientWhatsapp(
           patientDetails,
           patientsToNumMeals[patientId],
-          decodedUser,
+          dbCookUser,
           cookAddress
         );
       }
 
-      await sendCookWhatsapp(decodedUser, allPatientDetails);
+      await sendCookWhatsapp(dbCookUser, allPatientDetails);
 
       res.sendStatus(204);
     } catch (error) {
@@ -190,7 +201,7 @@ async function sendCookWhatsapp(decodedUser, allPatientDetails) {
 async function sendPatientWhatsapp(
   patientDetails,
   numMeals,
-  decodedUser,
+  dbCookUser,
   cookAddress
 ) {
   var accountSid = process.env.TWILIO_ACCOUNT_SID;
@@ -202,11 +213,11 @@ async function sendPatientWhatsapp(
       from: 'whatsapp:' + process.env.WHATSAPP_BUSINESS_ACCOUNT_NUMBER,
       body:
         "Hi! We hope you're hungry because your food is ready.\n \nYour cook details are:\n\nName: " +
-        decodedUser.first_name +
+        dbCookUser.first_name +
         ' ' +
-        decodedUser.last_name +
+        dbCookUser.last_name +
         '\nPhone number: ' +
-        decodedUser.phone_number +
+        dbCookUser.phone_number +
         '\nAddress: ' +
         cookAddress[0].house_number +
         ', ' +

@@ -186,10 +186,13 @@ module.exports = {
   cancelMeal: async function(patient, reqBody, res) {
     try {
       if (patient.user_type !== 'Patient') {
-        throw new Error('Only patients cance meals via this route.');
+        throw new Error('Only patients can cancel meals via this route.');
       }
       const cookId = reqBody.cook_id;
       const mealScheduledFor = reqBody.scheduled_for;
+      const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
+        zone: 'Asia/Kolkata',
+      });
 
       // Get all meals, which have the given patients id and the given cook's id.
       const todayMidnight = DateTime.fromObject({
@@ -199,7 +202,7 @@ module.exports = {
         .select('id', 'patient_id', 'scheduled_for', 'cancelled')
         .from('meal')
         .where({ cook_id: cookId, patient_id: patient.id })
-        .andWhere('scheduled_for', mealScheduledFor);
+        .andWhere('scheduled_for', mealScheduledForDate);
 
       if (!meals || meals.length === 0) {
         throw new Error(
@@ -211,13 +214,16 @@ module.exports = {
       const tomorrowMidnight = DateTime.fromObject({
         zone: 'Asia/Kolkata',
       }).startOf('day');
-      const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
-        zone: 'Asia/Kolkata',
-      });
+
+      // get the user details fresh from the DB.
+      const dbPatientUser = await knex('user')
+        .select('phone_number', 'first_name', 'last_name', 'approved')
+        .where('id', patient.id)
+        .first();
 
       if (mealScheduledForDate.toMillis() === todayMidnight.toMillis()) {
-        if (currentIndianDate.hour <= 10) {
-          markMealsAsCancelled(meals, res, patient, cookId);
+        if (currentIndianDate.hour <= 12) {
+          markMealsAsCancelled(meals, res, dbPatientUser, cookId);
           return;
         } else {
           throw new Error(
@@ -228,7 +234,7 @@ module.exports = {
         mealScheduledForDate.toMillis() === tomorrowMidnight.toMillis()
       ) {
         if (currentIndianDate.hour >= 20) {
-          await markMealsAsCancelled(meals, res, patient, cookId);
+          await markMealsAsCancelled(meals, res, dbPatientUser, cookId);
           return;
         } else {
           // If the meals being cancelled are for tomorrow and current India time is < 8 PM, remove the patient ID from the meal, thus releasing it back to the list of meals returns by the book meals API.

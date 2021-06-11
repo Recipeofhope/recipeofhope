@@ -28,5 +28,17 @@ export default {
       );
       return data;
     },
+    async ADD_TO_WAITLIST({ commit, dispatch }, payload) {
+      const data = await asyncMiddleware(
+        async function() {
+          return await patient.addToWaitlist(payload);
+        },
+        commit,
+        dispatch,
+        'ADD_TO_WAITLIST',
+        true
+      );
+      return data;
+    },
   },
 };

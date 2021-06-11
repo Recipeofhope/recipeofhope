@@ -80,8 +80,22 @@
               type="button"
               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
               @click="orderFromCooks(meals.nearby)"
+              :disabled="shouldDisableOrderButtons"
+              :class="{
+                'button-disabled': shouldDisableOrderButtons,
+              }"
             >
               Order
+            </button>
+          </div>
+          <div class="py-4 flex justify-end">
+            <button
+              type="button"
+              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
+              @click="joinWaitlist"
+              v-if="shouldDisableOrderButtons"
+            >
+              Join Waitlist
             </button>
           </div>
         </div>
@@ -118,7 +132,7 @@
                 </tr>
               </thead>
               <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="(meal, idx) in meals.further" :key="meal.id">
+                <tr v-for="meal in meals.further" :key="meal.id">
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <!-- <div class="flex-shrink-0 h-10 w-10">
@@ -162,6 +176,10 @@
               type="button"
               class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
               @click="orderFromCooks(meals.further)"
+              :disabled="shouldDisableOrderButtons"
+              :class="{
+                'button-disabled': shouldDisableOrderButtons,
+              }"
             >
               Order
             </button>
@@ -176,17 +194,28 @@
       :title="title"
       :message="message"
     />
+    <ConfirmModal
+      v-show="showWaitlistModal"
+      @CloseModal="closeModal()"
+      @ConfirmListener="addToWaitlist"
+      v-bind:showMealsRequestedInput="true"
+      :title="title"
+      :message="message"
+    />
   </div>
 </template>
 <script>
   import SectionHeading from '@/components/SectionHeading.vue';
   import SuccessErrorModal from '@/components/SuccessErrorModal.vue';
+  import ConfirmModal from '@/components/ConfirmModal.vue';
 
   export default {
     data() {
       return {
         error: false,
         showModal: false,
+        showWaitlistModal: false,
+        shouldDisableOrderButtons: false,
         title: '',
         message: '',
         meals: {
@@ -198,6 +227,7 @@
     components: {
       SectionHeading,
       SuccessErrorModal,
+      ConfirmModal,
     },
     mounted() {
       this.getMeals();
@@ -217,8 +247,19 @@
         this.meals.further = [];
         this.meals.nearby = [];
         const res = await this.$store.dispatch('patient/GET_AVAILABLE_MEALS');
+        const data = res.data;
+        if (res.status === 400) {
+          if (data.message === 'JOIN_WAITLIST') {
+            this.shouldDisableOrderButtons = true;
+          } else {
+            this.showModal = true;
+            this.title = 'Error';
+            this.error = true;
+            this.message = data.message;
+          }
+          return;
+        }
         if (res.status === 200) {
-          const data = res.data;
           for (const cook of data) {
             cook.quantity = null;
             if (cook.nearby) {
@@ -288,9 +329,52 @@
       closeModal() {
         this.error = false;
         this.showModal = false;
+        this.showWaitlistModal = false;
         this.title = '';
         this.message = '';
+      },
+      async joinWaitlist() {
+        this.showWaitlistModal = true;
+        this.title = 'Confirm Add to Waitlist';
+        this.message =
+          'Joining the waitlist will allow a volunteer to reach out to you if any meals become available.';
+      },
+      async addToWaitlist(mealsRequested) {
+        if (mealsRequested <= 0) {
+          this.showModal = true;
+          this.title = 'Error';
+          this.error = true;
+          this.message = 'Number of meals requested must be greater than 0.';
+          return;
+        }
+        const payload = { meals_requested: mealsRequested };
+        this.showWaitlistModal = false;
+        try {
+          const res = await this.$store.dispatch(
+            'patient/ADD_TO_WAITLIST',
+            payload
+          );
+          this.showModal = true;
+          if (res.status === 200) {
+            this.title = 'Successfully joined waitlist!';
+          } else {
+            this.title = 'Error';
+            this.error = true;
+            this.message = res.data?.message;
+          }
+        } catch (error) {
+          this.title = 'Error';
+          this.error = true;
+          this.message = error.message;
+        }
       },
     },
   };
 </script>
+<style scoped>
+  .button-disabled {
+    opacity: 0.6;
+    pointer-events: none;
+    background-color: gray;
+  }
+</style>

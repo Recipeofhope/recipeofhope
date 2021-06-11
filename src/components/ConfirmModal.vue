@@ -71,6 +71,24 @@
             >
               {{ title }}
             </h3>
+            <div
+              class="px-6 py-4 whitespace-nowrap inline-flex"
+              v-if="showMealsRequestedInput"
+            >
+              <div
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+              >
+                No. of Meals Requested
+              </div>
+              <input
+                class="w-16"
+                @keypress="isNumber($event)"
+                type="number"
+                min="1"
+                :max="20"
+                v-model.number="mealsRequested"
+              />
+            </div>
             <div class="mt-2">
               <p class="text-sm text-gray-500">
                 {{ message }}
@@ -103,13 +121,26 @@
 
 <script>
   export default {
-    props: ['title', 'message'],
+    props: ['title', 'message', 'showMealsRequestedInput'],
+    data() {
+      return {
+        mealsRequested: 1,
+      };
+    },
     methods: {
       closeModal() {
+        this.mealsRequested = 1;
         this.$emit('CloseModal');
       },
       confirmListener() {
-        this.$emit('ConfirmListener');
+        if (this.showMealsRequestedInput) {
+          this.$emit('ConfirmListener', this.mealsRequested);
+        } else {
+          this.$emit('ConfirmListener');
+        }
+      },
+      isNumber(event) {
+        if (!/\d/.test(event.key)) return event.preventDefault();
       },
     },
   };

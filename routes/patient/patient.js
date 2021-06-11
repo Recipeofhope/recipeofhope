@@ -4,10 +4,10 @@ const { getMealsForTomorrow } = require('../common');
 const { DateTime } = require('luxon');
 
 module.exports = {
-  getMeals: async function(cook, res) {
+  getMeals: async function(patient, res) {
     try {
-      if (!cook) res.status(400).json({ message: 'Invalid user' });
-      else if (cook.user_type != 'Patient')
+      if (!patient) res.status(400).json({ message: 'Invalid user' });
+      else if (patient.user_type != 'Patient')
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
@@ -17,9 +17,7 @@ module.exports = {
           throw new Error('Error while fetching meal details.');
         }
         if (resultMeals.length === 0) {
-          throw new Error(
-            'No meals available for tomorrow. Please consider joining the waitlist.'
-          );
+          throw new Error('JOIN_WAITLIST');
         }
 
         //Getting cook details for available meals.
@@ -68,7 +66,7 @@ module.exports = {
         let getUserLocalityQuery = knex
           .select('address.locality_id')
           .from('address')
-          .where('address.user_id', '=', cook.id);
+          .where('address.user_id', '=', patient.id);
 
         let userLocationDetails = await getUserLocalityQuery;
 
@@ -118,10 +116,10 @@ module.exports = {
     }
   },
 
-  bookMeals: async function(cook, requestBody, res) {
+  bookMeals: async function(patient, requestBody, res) {
     try {
-      if (!cook) res.status(400).json({ message: 'Invalid user' });
-      else if (cook.user_type !== 'Patient')
+      if (!patient) res.status(400).json({ message: 'Invalid user' });
+      else if (patient.user_type !== 'Patient')
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
@@ -159,7 +157,7 @@ module.exports = {
 
             for (let j = 0; j < requestBody[i].number_of_meals; j++) {
               var result = await tr('meal')
-                .update({ patient_id: cook.id })
+                .update({ patient_id: patient.id })
                 .where('meal.id', '=', resultMeals[j].id);
               success += result;
             }

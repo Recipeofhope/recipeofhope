@@ -43,6 +43,7 @@
     },
     mounted() {
       this.getRecipientInformation();
+      this.getTodayTomorrowsMealDetails();
     },
     methods: {
       getRecipientInformation() {
@@ -58,6 +59,7 @@
         this.recipient.user_id = data.user.id;
         this.recipient.phone_number = data.user.phone_number;
       },
+      getTodayTomorrowsMealDetails() {},
     },
   };
 </script>

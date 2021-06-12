@@ -28,6 +28,9 @@ export default {
     setUser(state, payload) {
       state.currentUser = payload;
     },
+    setCurrentMeals(state, payload) {
+      state.currentMeals = payload;
+    },
     setToken(state, payload) {
       state.token = payload;
     },

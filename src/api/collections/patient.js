@@ -8,4 +8,6 @@ export default {
   bookMeals: (payload) => http.put(`${resource}/book-meals`, payload),
 
   addToWaitlist: (payload) => http.post(`${resource}/waitlist`, payload),
+
+  cancelMeal: (payload) => http.post(`${resource}/cancel-meal`, payload),
 };

@@ -40,5 +40,17 @@ export default {
       );
       return data;
     },
+    async CANCEL_MEAL({ commit, dispatch }, payload) {
+      const data = await asyncMiddleware(
+        async function() {
+          return await patient.cancelMeal(payload);
+        },
+        commit,
+        dispatch,
+        'CANCEL_MEAL',
+        true
+      );
+      return data;
+    },
   },
 };

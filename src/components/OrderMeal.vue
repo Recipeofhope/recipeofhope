@@ -3,224 +3,315 @@
     <!-- This example requires Tailwind CSS v2.0+ -->
     <SectionHeading :headingTxt="'Your Meals'" />
     <div class="py-10">
-      <p>Add meals booked for today/tomorrow here.</p>
-    </div>
-    <SectionHeading :headingTxt="'Cooks nearby'" />
-    <div class="flex flex-col py-10">
-      <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+      <div class="flex flex-col pb-10">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div
-            class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+            class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8"
           >
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Meals Available
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Quantity
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="meal in meals.nearby" :key="meal.id">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <!-- <div class="flex-shrink-0 h-10 w-10">
+            <div
+              class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+            >
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Name
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Meals Booked
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Date
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    ></th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="(meal, id) of meals.bookedMeals" :key="id">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <!-- <div class="flex-shrink-0 h-10 w-10">
                         <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixqx=HMcQGzeISi&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
                       </div> -->
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">
-                          {{ meal.cook_name }}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                          {{ meal.locality_name }}
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            {{ meal.booking_details.cook_name }}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{ meal.booking_details.locality }}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
-                    >
-                      {{ meal.count }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <input
-                      class="w-16"
-                      type="number"
-                      name=""
-                      id=""
-                      min="1"
-                      :max="meal.count"
-                      v-model.number="meal.quantity"
-                      @keypress="isNumber($event)"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="py-4 flex justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
-              @click="orderFromCooks(meals.nearby)"
-              :disabled="shouldDisableOrderButtons"
-              :class="{
-                'button-disabled': shouldDisableOrderButtons,
-              }"
-            >
-              Order
-            </button>
-          </div>
-          <div class="py-4 flex justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
-              @click="joinWaitlist"
-              v-if="shouldDisableOrderButtons"
-            >
-              Join Waitlist
-            </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                      >
+                        {{ meal.booking_details.count }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="text-sm font-medium text-gray-900">
+                        {{ formatDate(meal.date) }}
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="py-4 flex justify-end">
+                        <button
+                          type="button"
+                          class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
+                          @click="confirmCancelMeal(id)"
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    <SectionHeading :headingTxt="'Cooks further away'" />
-    <div class="flex flex-col py-10">
-      <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
+      <SectionHeading :headingTxt="'Cooks nearby'" />
+      <div class="flex flex-col py-10">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
           <div
-            class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+            class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8"
           >
-            <table class="min-w-full divide-y divide-gray-200">
-              <thead class="bg-gray-50">
-                <tr>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Name
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Meals Available
-                  </th>
-                  <th
-                    scope="col"
-                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                  >
-                    Quantity
-                  </th>
-                </tr>
-              </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
-                <tr v-for="meal in meals.further" :key="meal.id">
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <!-- <div class="flex-shrink-0 h-10 w-10">
+            <div
+              class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+            >
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Name
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Meals Available
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Quantity
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="meal in meals.nearby" :key="meal.id">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <!-- <div class="flex-shrink-0 h-10 w-10">
                         <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixqx=HMcQGzeISi&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
                       </div> -->
-                      <div>
-                        <div class="text-sm font-medium text-gray-900">
-                          {{ meal.cook_name }}
-                        </div>
-                        <div class="text-sm text-gray-500">
-                          {{ meal.locality_name }}
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            {{ meal.cook_name }}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{ meal.locality_name }}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
-                    >
-                      {{ meal.count }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <input
-                      class="w-16"
-                      @keypress="isNumber($event)"
-                      type="number"
-                      name=""
-                      id=""
-                      min="1"
-                      :max="meal.count"
-                      v-model.number="meal.quantity"
-                    />
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="py-4 flex justify-end">
-            <button
-              type="button"
-              class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
-              @click="orderFromCooks(meals.further)"
-              :disabled="shouldDisableOrderButtons"
-              :class="{
-                'button-disabled': shouldDisableOrderButtons,
-              }"
-            >
-              Order
-            </button>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                      >
+                        {{ meal.count }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <input
+                        class="w-16"
+                        type="number"
+                        name=""
+                        id=""
+                        min="1"
+                        :max="meal.count"
+                        v-model.number="meal.quantity"
+                        @keypress="isNumber($event)"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="py-4 flex justify-end">
+              <button
+                type="button"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
+                @click="orderFromCooks(meals.nearby)"
+                :disabled="shouldDisableOrderButtons"
+                :class="{
+                  'button-disabled': shouldDisableOrderButtons,
+                }"
+              >
+                Order
+              </button>
+            </div>
+            <div class="py-4 flex justify-end">
+              <button
+                type="button"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
+                @click="joinWaitlist"
+                v-if="shouldDisableOrderButtons"
+              >
+                Join Waitlist
+              </button>
+            </div>
           </div>
         </div>
       </div>
+      <SectionHeading :headingTxt="'Cooks further away'" />
+      <div class="flex flex-col py-10">
+        <div class="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
+          <div
+            class="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8"
+          >
+            <div
+              class="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg"
+            >
+              <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Name
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Meals Available
+                    </th>
+                    <th
+                      scope="col"
+                      class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                    >
+                      Quantity
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                  <tr v-for="meal in meals.further" :key="meal.id">
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <div class="flex items-center">
+                        <!-- <div class="flex-shrink-0 h-10 w-10">
+                        <img class="h-10 w-10 rounded-full" src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&ixqx=HMcQGzeISi&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=4&w=256&h=256&q=60" alt="">
+                      </div> -->
+                        <div>
+                          <div class="text-sm font-medium text-gray-900">
+                            {{ meal.cook_name }}
+                          </div>
+                          <div class="text-sm text-gray-500">
+                            {{ meal.locality_name }}
+                          </div>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <span
+                        class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
+                      >
+                        {{ meal.count }}
+                      </span>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                      <input
+                        class="w-16"
+                        @keypress="isNumber($event)"
+                        type="number"
+                        name=""
+                        id=""
+                        min="1"
+                        :max="meal.count"
+                        v-model.number="meal.quantity"
+                      />
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="py-4 flex justify-end">
+              <button
+                type="button"
+                class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
+                @click="orderFromCooks(meals.further)"
+                :disabled="shouldDisableOrderButtons"
+                :class="{
+                  'button-disabled': shouldDisableOrderButtons,
+                }"
+              >
+                Order
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <SuccessErrorModal
+        v-show="showModal"
+        @CloseModal="closeModal()"
+        v-bind:error="error"
+        :title="title"
+        :message="message"
+      />
+      <ConfirmModal
+        v-show="showConfirmModal"
+        @CloseModal="closeModal()"
+        @ConfirmListener="
+          shouldShowMealsRequestedInput ? addToWaitlist() : cancelMeal()
+        "
+        v-bind:showMealsRequestedInput="shouldShowMealsRequestedInput"
+        :title="title"
+        :message="message"
+      />
     </div>
-    <SuccessErrorModal
-      v-show="showModal"
-      @CloseModal="closeModal()"
-      v-bind:error="error"
-      :title="title"
-      :message="message"
-    />
-    <ConfirmModal
-      v-show="showWaitlistModal"
-      @CloseModal="closeModal()"
-      @ConfirmListener="addToWaitlist"
-      v-bind:showMealsRequestedInput="true"
-      :title="title"
-      :message="message"
-    />
   </div>
 </template>
 <script>
   import SectionHeading from '@/components/SectionHeading.vue';
   import SuccessErrorModal from '@/components/SuccessErrorModal.vue';
   import ConfirmModal from '@/components/ConfirmModal.vue';
+  import { DateTime } from 'luxon';
 
   export default {
     data() {
       return {
         error: false,
         showModal: false,
-        showWaitlistModal: false,
+        showConfirmModal: false,
         shouldDisableOrderButtons: false,
+        mealIdToBeCancelled: '',
+        shouldShowMealsRequestedInput: false,
         title: '',
         message: '',
         meals: {
           nearby: [],
           further: [],
+          bookedMeals: {},
         },
       };
     },
@@ -260,14 +351,9 @@
           return;
         }
         if (res.status === 200) {
-          for (const cook of data) {
-            cook.quantity = null;
-            if (cook.nearby) {
-              this.meals.nearby.push(cook);
-            } else {
-              this.meals.further.push(cook);
-            }
-          }
+          this.shouldDisableOrderButtons = false;
+          this.meals.nearby = data.filter((cook) => cook.nearby);
+          this.meals.further = data.filter((cook) => !cook.nearby);
         }
       },
       async orderFromCooks(meals) {
@@ -306,15 +392,16 @@
         }
         try {
           const res = await this.$store.dispatch('patient/BOOK_MEALS', payload);
+          this.showModal = true;
           if (res.status === 200) {
-            this.showModal = true;
             this.title = res.data.message;
             this.error = false;
             await this.getMealsData();
           } else {
             this.title = 'Error';
             this.error = true;
-            this.message = res.data?.message;
+            this.message =
+              'Error while booking meals. Please refresh the page and try again.';
           }
         } catch (error) {
           this.showModal = true;
@@ -329,12 +416,15 @@
       closeModal() {
         this.error = false;
         this.showModal = false;
-        this.showWaitlistModal = false;
+        this.showConfirmModal = false;
+        this.shouldShowMealsRequestedInput = false;
         this.title = '';
         this.message = '';
+        this.mealIdToBeCancelled = '';
       },
       async joinWaitlist() {
-        this.showWaitlistModal = true;
+        this.shouldShowMealsRequestedInput = true;
+        this.showConfirmModal = true;
         this.title = 'Confirm Add to Waitlist';
         this.message =
           'Joining the waitlist will allow a volunteer to reach out to you if any meals become available.';
@@ -348,7 +438,7 @@
           return;
         }
         const payload = { meals_requested: mealsRequested };
-        this.showWaitlistModal = false;
+        this.showConfirmModal = false;
         try {
           const res = await this.$store.dispatch(
             'patient/ADD_TO_WAITLIST',
@@ -367,6 +457,53 @@
           this.error = true;
           this.message = error.message;
         }
+      },
+      async cancelMeal() {
+        const bookedMeal = this.meals.bookedMeals[this.mealIdToBeCancelled];
+        const payload = {
+          cook_id: bookedMeal.cook_id,
+          scheduled_for: bookedMeal.date,
+        };
+        this.showConfirmModal = false;
+        try {
+          const res = await this.$store.dispatch(
+            'patient/CANCEL_MEAL',
+            payload
+          );
+          this.showModal = true;
+          if (res.status === 200) {
+            this.title = 'Cancelled meal successfully!';
+            delete this.meals.bookedMeals[this.mealIdToBeCancelled];
+            this.mealIdToBeCancelled = '';
+            await this.$store.commit(
+              'auth/setRecentMeals',
+              this.meals.bookedMeals
+            );
+            await this.getMealsData();
+          } else {
+            this.title = 'Error';
+            this.error = true;
+            this.message = res.data?.message;
+          }
+        } catch (error) {
+          this.title = 'Error';
+          this.error = true;
+          this.message = error.message;
+        }
+      },
+      formatDate(date) {
+        return DateTime.fromISO(date, {
+          zone: 'Asia/Kolkata',
+        })
+          .setLocale('en-US')
+          .toFormat('ccc, LLL dd');
+      },
+      confirmCancelMeal(id) {
+        this.mealIdToBeCancelled = id;
+        this.showConfirmModal = true;
+        this.title = 'Confirm Cancel Meal';
+        this.message =
+          'This will cancel all meals from the cook for the given date.';
       },
     },
   };

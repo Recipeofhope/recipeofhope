@@ -6,12 +6,23 @@ const { DateTime } = require('luxon');
 module.exports = {
   getMeals: async function(patient, res) {
     try {
-      if (!patient) res.status(400).json({ message: 'Invalid user' });
-      else if (patient.user_type != 'Patient')
+      if (!patient) {
+        res.status(400).json({ message: 'Invalid user' });
+        return;
+      } else if (patient.user_type != 'Patient') {
         res
           .status(400)
           .json({ message: 'User type is not allowed to book meal' });
-      else {
+        return;
+      } else {
+        const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+        if (currentIndianDate.hour >= 20) {
+          res.status(400).json({
+            message:
+              'Meals unavailable after 8 PM. Consider joining the waitlist.',
+          });
+          return;
+        }
         let resultMeals = await getMealsForTomorrow();
         if (!resultMeals) {
           throw new Error('Error while fetching meal details.');
@@ -135,10 +146,9 @@ module.exports = {
           .plus({ days: 1 });
         await mealBookingTimeCheck();
 
+        let success = 0;
+        let totalMeals = 0;
         await knex.transaction(async (tr) => {
-          let success = 0;
-          let totalMeals = 0;
-
           //Getting all available meals for cook IDs sent by the patient.
 
           for (let i = 0; i < requestBody.length; i++) {
@@ -164,20 +174,20 @@ module.exports = {
 
             totalMeals += requestBody[i].number_of_meals;
           }
-
-          if (success === totalMeals)
-            res.status(200).json({ message: 'Success! All meals booked.' });
-          //return Json('Success! All meals booked.');
-          else if (success > 0 && success < totalMeals)
-            res.status(200).json({
-              message:
-                'Some meals booked successfully. Please check which cook/ meals were booked and try again.',
-            });
-          else if (success == 0)
-            throw new Error(
-              'Oops, something failed! Sorry, but your meals were not booked. Please try again and contact support if the problem persists!'
-            );
         });
+
+        if (success === totalMeals)
+          res.status(200).json({ message: 'Success! All meals booked.' });
+        //return Json('Success! All meals booked.');
+        else if (success > 0 && success < totalMeals)
+          res.status(200).json({
+            message:
+              'Some meals booked successfully. Please check which cook/ meals were booked and try again.',
+          });
+        else if (success == 0)
+          throw new Error(
+            'Oops, something failed! Sorry, but your meals were not booked. Please try again and contact support if the problem persists!'
+          );
       }
     } catch (error) {
       res.status(400).json({ message: error.message });
@@ -206,14 +216,16 @@ module.exports = {
 
       if (!meals || meals.length === 0) {
         throw new Error(
-          'No errors to cancel for this cook for the given recipient.'
+          'No meals to cancel for this cook for the given recipient.'
         );
       }
 
       const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
       const tomorrowMidnight = DateTime.fromObject({
         zone: 'Asia/Kolkata',
-      }).startOf('day');
+      })
+        .plus({ days: 1 })
+        .startOf('day');
 
       // get the user details fresh from the DB.
       const dbPatientUser = await knex('user')
@@ -302,17 +314,13 @@ module.exports = {
 
 async function markMealsAsCancelled(meals, res, patient, cookId) {
   // Cancel every meal together in one batch.
-  const result = await knex.transaction(async (tr) => {
+  await knex.transaction(async (tr) => {
     for (const meal of meals) {
       await tr('meal')
         .update('cancelled', true)
         .where('id', meal.id);
     }
   });
-
-  if (!result || result.length === 0) {
-    throw new Error('No meals to cancel for the given cook.');
-  }
 
   // Whatsapp the admin telling them how many meals have been cancelled, along with details of the cook and patient.
 
@@ -405,5 +413,6 @@ async function removePatientIdFromMeals(meals, res) {
         .update('patient_id', null)
         .where('id', meal.id);
     }
+    res.status(200).json({ message: 'Meals successfully cancelled.' });
   });
 }

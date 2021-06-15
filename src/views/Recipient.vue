@@ -43,14 +43,12 @@
     },
     mounted() {
       this.getRecipientInformation();
-      this.getTodayTomorrowsMealDetails();
     },
     methods: {
       getRecipientInformation() {
         let data = {};
         data.user = this.$store.getters['auth/currentUser'];
         data.address = this.$store.getters['auth/currentAddress'];
-        data.meals = this.$store.getters['auth/currentMeals'];
 
         this.recipient.first_name = data.user.first_name;
         this.recipient.last_name = data.user.last_name;
@@ -59,7 +57,6 @@
         this.recipient.user_id = data.user.id;
         this.recipient.phone_number = data.user.phone_number;
       },
-      getTodayTomorrowsMealDetails() {},
     },
   };
 </script>

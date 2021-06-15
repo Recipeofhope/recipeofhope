@@ -418,8 +418,9 @@ async function getReturnObj(result, date) {
           .startOf('day');
         const tomorrow = today.plus({ days: 1 });
         if (
-          mealObj.meal_scheduled_for.getTime() === today.toMillis() ||
-          mealObj.meal_scheduled_for.getTime() === tomorrow.toMillis()
+          (mealObj.meal_scheduled_for.getTime() === today.toMillis() ||
+            mealObj.meal_scheduled_for.getTime() === tomorrow.toMillis()) &&
+          !mealObj.meal_cancelled
         ) {
           if (!(meal_scheduled_for in returnObj.recent_meals)) {
             returnObj.recent_meals[meal_scheduled_for] = {};
@@ -472,5 +473,17 @@ async function getReturnObj(result, date) {
       }
     }
   }
+  // reorder recent meals for the UI.
+  const returnMealsTemp = {};
+  Object.entries(returnObj.recent_meals).forEach(([date, cooks]) => {
+    Object.entries(cooks).forEach(([cook_id, booking_details]) => {
+      returnMealsTemp[uuidv4()] = {
+        cook_id,
+        date,
+        booking_details,
+      };
+    });
+  });
+  returnObj.recent_meals = returnMealsTemp;
   return returnObj;
 }

@@ -10,6 +10,12 @@ module.exports = {
       const invalidUserErrorMessage =
         'Only Recipients are allowed to book meals.';
       validatePatient(patient, invalidUserErrorMessage);
+      const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+      if (currentIndianDate.hour >= 20) {
+        throw new Error(
+          'Meals unavailable after 8 PM. Consider joining the waitlist.'
+        );
+      }
       let resultMeals = await getMealsForTomorrow();
       if (!resultMeals) {
         throw new Error('Error while fetching meal details.');
@@ -114,7 +120,7 @@ module.exports = {
   },
   getBookedMeals: async function(patient, res) {
     try {
-      const invalidUserErrorMessage = 'Only ';
+      const invalidUserErrorMessage = 'Only Recipients can book meals.';
       validatePatient(patient, invalidUserErrorMessage);
       const todayMidnight = DateTime.fromObject({
         zone: 'Asia/Kolkata',
@@ -227,14 +233,16 @@ module.exports = {
 
       if (!meals || meals.length === 0) {
         throw new Error(
-          'No errors to cancel for this cook for the given recipient.'
+          'No meals to cancel for this cook for the given recipient.'
         );
       }
 
       const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
       const tomorrowMidnight = DateTime.fromObject({
         zone: 'Asia/Kolkata',
-      }).startOf('day');
+      })
+        .plus({ days: 1 })
+        .startOf('day');
 
       // get the user details fresh from the DB.
       const dbPatientUser = await knex('user')
@@ -334,17 +342,13 @@ function validatePatient(patient, message) {
 
 async function markMealsAsCancelled(meals, res, patient, cookId) {
   // Cancel every meal together in one batch.
-  const result = await knex.transaction(async (tr) => {
+  await knex.transaction(async (tr) => {
     for (const meal of meals) {
       await tr('meal')
         .update('cancelled', true)
         .where('id', meal.id);
     }
   });
-
-  if (!result || result.length === 0) {
-    throw new Error('No meals to cancel for the given cook.');
-  }
 
   // Whatsapp the admin telling them how many meals have been cancelled, along with details of the cook and patient.
 
@@ -437,5 +441,6 @@ async function removePatientIdFromMeals(meals, res) {
         .update('patient_id', null)
         .where('id', meal.id);
     }
+    res.status(200).json({ message: 'Meals successfully cancelled.' });
   });
 }

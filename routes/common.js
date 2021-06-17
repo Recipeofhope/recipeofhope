@@ -14,6 +14,7 @@ module.exports = {
       .count('meal.id')
       .from('meal')
       .where('meal.scheduled_for', '=', tomorrow)
+      .andWhere('meal.cancelled', false)
       .whereNull('meal.patient_id')
       .groupBy('meal.cook_id');
     return getMealsQuery;

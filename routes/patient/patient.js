@@ -122,6 +122,8 @@ module.exports = {
     try {
       const invalidUserErrorMessage = 'Only Recipients can book meals.';
       validatePatient(patient, invalidUserErrorMessage);
+
+      // Get all meals scheduled for this patient, for today and tomorrow.
       const todayMidnight = DateTime.fromObject({
         zone: 'Asia/Kolkata',
       }).startOf('day');
@@ -134,8 +136,8 @@ module.exports = {
         .andWhere('cancelled', false)
         .whereBetween('scheduled_for', [todayMidnight, tomorrowMidnight])
         .groupBy('cook_id', 'scheduled_for');
-      const bookedMeals = new Map(
-        bookedMealsQueryResult.map((bookedMeal) => [uuidv4(), bookedMeal])
+      const bookedMeals = await getFormattedBookedMealsResponse(
+        bookedMealsQueryResult
       );
       res
         .status(httpConstants.HTTP_STATUS_OK)
@@ -443,4 +445,51 @@ async function removePatientIdFromMeals(meals, res) {
     }
     res.status(200).json({ message: 'Meals successfully cancelled.' });
   });
+}
+
+async function getFormattedBookedMealsResponse(bookedMealsQueryResult) {
+  return await Promise.all(
+    bookedMealsQueryResult.map(async (bookedMeal) => {
+      const formattedBookedMeals = {};
+      const cookDetails = (formattedBookedMeals['cook_details'] = {});
+      cookDetails['id'] = bookedMeal['cook_id'];
+
+      // get the cook's name for the given meal.
+      const cookDetailsQueryResult = await knex
+        .select('first_name', 'last_name')
+        .from('user')
+        .where('id', cookDetails['id'])
+        .first();
+
+      cookDetails['name'] =
+        cookDetailsQueryResult['first_name'] +
+        ' ' +
+        cookDetailsQueryResult['last_name'];
+
+      // Get the cook's locality.
+      const { name: localityName } = await knex
+        .select('name')
+        .from('locality')
+        .where('id', function() {
+          return this.select('locality_id')
+            .from('address')
+            .where('user_id', cookDetails['id'])
+            .first();
+        })
+        .first();
+
+      cookDetails['locality'] = localityName;
+
+      formattedBookedMeals['date'] = DateTime.fromJSDate(
+        bookedMeal['scheduled_for'],
+        {
+          zone: 'Asia/Kolkata',
+        }
+      )
+        .setLocale('en-US')
+        .toFormat('ccc, LLL dd');
+      formattedBookedMeals['count'] = bookedMeal['count'];
+      return [uuidv4(), formattedBookedMeals];
+    })
+  );
 }

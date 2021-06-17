@@ -3,12 +3,17 @@ const {
   bookMeals,
   cancelMeal,
   waitlistPatient,
+  getBookedMeals,
 } = require('./patient');
 
 var router = require('express').Router();
 
 router.get('/get-meals', function(req, res) {
   return getMeals(req.decodedUser, res);
+});
+
+router.get('/booked-meals', function(req, res) {
+  return getBookedMeals(req.decodedUser, res);
 });
 
 router.put('/book-meals', function(req, res) {

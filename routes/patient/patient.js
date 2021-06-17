@@ -2,179 +2,196 @@ const knex = require('../../data/db');
 const { v4: uuidv4 } = require('uuid');
 const { getMealsForTomorrow } = require('../common');
 const { DateTime } = require('luxon');
+const httpConstants = require('http2').constants;
 
 module.exports = {
   getMeals: async function(patient, res) {
     try {
-      if (!patient) {
-        res.status(400).json({ message: 'Invalid user' });
-        return;
-      } else if (patient.user_type != 'Patient') {
-        res
-          .status(400)
-          .json({ message: 'User type is not allowed to book meal' });
-        return;
-      } else {
-        const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
-        if (currentIndianDate.hour >= 20) {
-          res.status(400).json({
-            message:
-              'Meals unavailable after 8 PM. Consider joining the waitlist.',
-          });
-          return;
-        }
-        let resultMeals = await getMealsForTomorrow();
-        if (!resultMeals) {
-          throw new Error('Error while fetching meal details.');
-        }
-        if (resultMeals.length === 0) {
-          throw new Error('JOIN_WAITLIST');
-        }
-
-        //Getting cook details for available meals.
-
-        //Get all cook details.
-        let getCooksQuery = knex
-          .select(
-            'user.id',
-            'user.first_name',
-            'user.last_name',
-            'address.locality_id',
-            'locality.name'
-          )
-          .from('user')
-          .join('address', 'user.id', '=', 'address.user_id')
-          .join('locality', 'address.locality_id', '=', 'locality.id')
-          .where('user.user_type', '=', 'Cook');
-
-        let resultCooks = await getCooksQuery;
-
-        //Final list of available meals from cooks.
-        if (!resultCooks) {
-          throw new Error('Error while fetching available meals.');
-        }
-        if (resultCooks.length === 0) {
-          throw new Error('No cooks available at the moment.');
-        }
-
-        for (let i = 0; i < resultMeals.length; i++) {
-          for (let j = 0; j < resultCooks.length; j++) {
-            if (
-              resultMeals[i].cook_id.toString() === resultCooks[j].id.toString()
-            ) {
-              resultMeals[i].cook_name =
-                resultCooks[j].first_name + ' ' + resultCooks[j].last_name;
-              resultMeals[i].locality_id = resultCooks[j].locality_id;
-              resultMeals[i].locality_name = resultCooks[j].name;
-            } else continue;
-          }
-        }
-
-        // Sort list - near and far.
-
-        //Get location details of patient.
-
-        let getUserLocalityQuery = knex
-          .select('address.locality_id')
-          .from('address')
-          .where('address.user_id', '=', patient.id);
-
-        let userLocationDetails = await getUserLocalityQuery;
-
-        if (!userLocationDetails) {
-          throw new Error('Error while fetching location details of patient.');
-        }
-        if (userLocationDetails.length === 0) {
-          throw new Error('No address present for patient.');
-        }
-
-        // Get service areas of patient location.
-
-        let getServiceAreas = knex
-          .select('service_areas.service_area_id')
-          .from('service_areas')
-          .where(
-            'service_areas.locality_id',
-            '=',
-            userLocationDetails[0].locality_id
-          );
-
-        let serviceAreas = await getServiceAreas;
-
-        if (!serviceAreas || serviceAreas.length == 0) {
-          throw new Error(
-            'Error while fetching service areas of patient location.'
-          );
-        }
-
-        // Compare cook locations with service areas of patient location. If match, nearby set to true.
-
-        for (let i = 0; i < resultMeals.length; i++) {
-          for (let j = 0; j < serviceAreas.length; j++) {
-            if (
-              resultMeals[i].locality_id.toString() ===
-              serviceAreas[j].service_area_id.toString()
-            ) {
-              resultMeals[i].nearby = true;
-              break;
-            } else resultMeals[i].nearby = false;
-          }
-        }
-        res.status(200).json(resultMeals);
+      const invalidUserErrorMessage =
+        'Only Recipients are allowed to book meals.';
+      validatePatient(patient, invalidUserErrorMessage);
+      const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+      if (currentIndianDate.hour >= 20) {
+        throw new Error(
+          'Meals unavailable after 8 PM. Consider joining the waitlist.'
+        );
       }
+      let resultMeals = await getMealsForTomorrow();
+      if (!resultMeals) {
+        throw new Error('Error while fetching meal details.');
+      }
+      if (resultMeals.length === 0) {
+        throw new Error('JOIN_WAITLIST');
+      }
+
+      //Getting cook details for available meals.
+
+      //Get all cook details.
+      let getCooksQuery = knex
+        .select(
+          'user.id',
+          'user.first_name',
+          'user.last_name',
+          'address.locality_id',
+          'locality.name'
+        )
+        .from('user')
+        .join('address', 'user.id', '=', 'address.user_id')
+        .join('locality', 'address.locality_id', '=', 'locality.id')
+        .where('user.user_type', '=', 'Cook');
+
+      let resultCooks = await getCooksQuery;
+
+      //Final list of available meals from cooks.
+      if (!resultCooks) {
+        throw new Error('Error while fetching available meals.');
+      }
+      if (resultCooks.length === 0) {
+        throw new Error('No cooks available at the moment.');
+      }
+
+      for (let i = 0; i < resultMeals.length; i++) {
+        for (let j = 0; j < resultCooks.length; j++) {
+          if (
+            resultMeals[i].cook_id.toString() === resultCooks[j].id.toString()
+          ) {
+            resultMeals[i].cook_name =
+              resultCooks[j].first_name + ' ' + resultCooks[j].last_name;
+            resultMeals[i].locality_id = resultCooks[j].locality_id;
+            resultMeals[i].locality_name = resultCooks[j].name;
+          } else continue;
+        }
+      }
+
+      // Sort list - near and far.
+
+      //Get location details of patient.
+
+      let getUserLocalityQuery = knex
+        .select('address.locality_id')
+        .from('address')
+        .where('address.user_id', '=', patient.id);
+
+      let userLocationDetails = await getUserLocalityQuery;
+
+      if (!userLocationDetails) {
+        throw new Error('Error while fetching location details of patient.');
+      }
+      if (userLocationDetails.length === 0) {
+        throw new Error('No address present for patient.');
+      }
+
+      // Get service areas of patient location.
+
+      let getServiceAreas = knex
+        .select('service_areas.service_area_id')
+        .from('service_areas')
+        .where(
+          'service_areas.locality_id',
+          '=',
+          userLocationDetails[0].locality_id
+        );
+
+      let serviceAreas = await getServiceAreas;
+
+      if (!serviceAreas || serviceAreas.length == 0) {
+        throw new Error(
+          'Error while fetching service areas of patient location.'
+        );
+      }
+
+      // Compare cook locations with service areas of patient location. If match, nearby set to true.
+
+      for (let i = 0; i < resultMeals.length; i++) {
+        for (let j = 0; j < serviceAreas.length; j++) {
+          if (
+            resultMeals[i].locality_id.toString() ===
+            serviceAreas[j].service_area_id.toString()
+          ) {
+            resultMeals[i].nearby = true;
+            break;
+          } else resultMeals[i].nearby = false;
+        }
+      }
+      res.status(200).json(resultMeals);
     } catch (error) {
       res.status(400).json({ message: error.message });
+    }
+  },
+  getBookedMeals: async function(patient, res) {
+    try {
+      const invalidUserErrorMessage = 'Only Recipients can book meals.';
+      validatePatient(patient, invalidUserErrorMessage);
+      const todayMidnight = DateTime.fromObject({
+        zone: 'Asia/Kolkata',
+      }).startOf('day');
+      const tomorrowMidnight = todayMidnight.plus({ days: 1 });
+      let bookedMealsQueryResult = await knex
+        .select('cook_id', 'scheduled_for')
+        .count('id')
+        .from('meal')
+        .where('patient_id', patient.id)
+        .andWhere('cancelled', false)
+        .whereBetween('scheduled_for', [todayMidnight, tomorrowMidnight])
+        .groupBy('cook_id', 'scheduled_for');
+      const bookedMeals = new Map(
+        bookedMealsQueryResult.map((bookedMeal) => [uuidv4(), bookedMeal])
+      );
+      res
+        .status(httpConstants.HTTP_STATUS_OK)
+        .json(Object.fromEntries(bookedMeals));
+    } catch (error) {
+      res
+        .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+        .json({ message: error.message });
     }
   },
 
   bookMeals: async function(patient, requestBody, res) {
     try {
-      if (!patient) res.status(400).json({ message: 'Invalid user' });
-      else if (patient.user_type !== 'Patient')
-        res
-          .status(400)
-          .json({ message: 'User type is not allowed to book meal' });
-      else {
-        if (!requestBody || requestBody.length === 0) {
-          throw new Error('Missing request body with booking details.');
-        }
+      const invalidUserErrorMessage =
+        'Only Recipients are allowed to book meals.';
+      validatePatient(patient, invalidUserErrorMessage);
+      if (!requestBody || requestBody.length === 0) {
+        throw new Error('Missing request body with booking details.');
+      }
 
-        const tomorrow = DateTime.fromObject({
-          zone: 'Asia/Kolkata',
-        })
-          .startOf('day')
-          .plus({ days: 1 });
-        await mealBookingTimeCheck();
+      const tomorrow = DateTime.fromObject({
+        zone: 'Asia/Kolkata',
+      })
+        .startOf('day')
+        .plus({ days: 1 });
+      await mealBookingTimeCheck();
 
+      await knex.transaction(async (tr) => {
         let success = 0;
         let totalMeals = 0;
-        await knex.transaction(async (tr) => {
-          //Getting all available meals for cook IDs sent by the patient.
 
-          for (let i = 0; i < requestBody.length; i++) {
-            let resultMeals = await tr
-              .select('meal.id')
-              .from('meal')
-              .where('meal.scheduled_for', '=', tomorrow)
-              .whereNull('meal.patient_id')
-              .where('cook_id', '=', requestBody[i].cook_id);
+        //Getting all available meals for cook IDs sent by the patient.
 
-            if (!resultMeals || resultMeals.length == 0) {
-              throw new Error('Error while fetching meal details.');
-            }
+        for (let i = 0; i < requestBody.length; i++) {
+          let resultMeals = await tr
+            .select('meal.id')
+            .from('meal')
+            .where('meal.scheduled_for', '=', tomorrow)
+            .whereNull('meal.patient_id')
+            .where('cook_id', '=', requestBody[i].cook_id);
 
-            // Updating patient ID to user ID for the number of meals sent by the patient for each cook selected.
-
-            for (let j = 0; j < requestBody[i].number_of_meals; j++) {
-              var result = await tr('meal')
-                .update({ patient_id: patient.id })
-                .where('meal.id', '=', resultMeals[j].id);
-              success += result;
-            }
-
-            totalMeals += requestBody[i].number_of_meals;
+          if (!resultMeals || resultMeals.length == 0) {
+            throw new Error('Error while fetching meal details.');
           }
-        });
+
+          // Updating patient ID to user ID for the number of meals sent by the patient for each cook selected.
+
+          for (let j = 0; j < requestBody[i].number_of_meals; j++) {
+            var result = await tr('meal')
+              .update({ patient_id: patient.id })
+              .where('meal.id', '=', resultMeals[j].id);
+            success += result;
+          }
+
+          totalMeals += requestBody[i].number_of_meals;
+        }
 
         if (success === totalMeals)
           res.status(200).json({ message: 'Success! All meals booked.' });
@@ -188,16 +205,16 @@ module.exports = {
           throw new Error(
             'Oops, something failed! Sorry, but your meals were not booked. Please try again and contact support if the problem persists!'
           );
-      }
+      });
     } catch (error) {
       res.status(400).json({ message: error.message });
     }
   },
   cancelMeal: async function(patient, reqBody, res) {
     try {
-      if (patient.user_type !== 'Patient') {
-        throw new Error('Only patients can cancel meals via this route.');
-      }
+      const invalidUserErrorMessage =
+        'Only Recipients are allowed to book meals.';
+      validatePatient(patient, invalidUserErrorMessage);
       const cookId = reqBody.cook_id;
       const mealScheduledFor = reqBody.scheduled_for;
       const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
@@ -262,9 +279,8 @@ module.exports = {
   },
   waitlistPatient: async function(patient, reqBody, res) {
     try {
-      if (patient.user_type !== 'Patient') {
-        throw new Error('Only patients can join the waitlist.');
-      }
+      const invalidUserErrorMessage = 'Only patients can join the waitlist.';
+      validatePatient(patient, invalidUserErrorMessage);
       // If meals for tomorrow are available, patient cannot join the waitlist.
       const resultMeals = await getMealsForTomorrow();
       if (!resultMeals) {
@@ -305,12 +321,24 @@ module.exports = {
         waitlist_join_time: waitListJoinTime,
       };
       await knex('waitlist').insert(waitlistPatient);
-      res.status(200).json({ message: 'Successfully joined waitlist!' });
+      res
+        .status(httpConstants.HTTP_STATUS_OK)
+        .json({ message: 'Successfully joined waitlist!' });
     } catch (error) {
-      res.status(400).json({ message: error.message });
+      res
+        .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+        .json({ message: error.message });
     }
   },
 };
+
+function validatePatient(patient, message) {
+  if (!patient) {
+    throw new Error('Patient details not provided.');
+  } else if (patient.user_type != 'Patient') {
+    throw new Error(message);
+  }
+}
 
 async function markMealsAsCancelled(meals, res, patient, cookId) {
   // Cancel every meal together in one batch.

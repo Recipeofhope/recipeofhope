@@ -52,5 +52,17 @@ export default {
       );
       return data;
     },
+    async GET_BOOKED_MEALS({ commit, dispatch }) {
+      const data = await asyncMiddleware(
+        async function() {
+          return await patient.getBookedMeals();
+        },
+        commit,
+        dispatch,
+        'GET_BOOKED_MEALS',
+        true
+      );
+      return data;
+    },
   },
 };

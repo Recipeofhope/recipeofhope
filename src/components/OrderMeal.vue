@@ -47,10 +47,10 @@
                       </div> -->
                         <div>
                           <div class="text-sm font-medium text-gray-900">
-                            {{ meal.booking_details.cook_name }}
+                            {{ meal.cook_details.name }}
                           </div>
                           <div class="text-sm text-gray-500">
-                            {{ meal.booking_details.locality }}
+                            {{ meal.cook_details.locality }}
                           </div>
                         </div>
                       </div>
@@ -59,7 +59,7 @@
                       <span
                         class="px-2 inline-flex text-lg leading-5 font-semibold rounded-full bg-green-100 text-green-800"
                       >
-                        {{ meal.booking_details.count }}
+                        {{ meal.count }}
                       </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
@@ -157,7 +157,7 @@
                 </tbody>
               </table>
             </div>
-            <div class="py-4 flex justify-end">
+            <div class="py-4 flex sm:justify-end justify-start">
               <button
                 type="button"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
@@ -170,7 +170,7 @@
                 Order
               </button>
             </div>
-            <div class="py-4 flex justify-end">
+            <div class="py-4 flex sm:justify-end justify-start">
               <button
                 type="button"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
@@ -255,7 +255,7 @@
                 </tbody>
               </table>
             </div>
-            <div class="py-4 flex justify-end">
+            <div class="py-4 flex sm:justify-end justify-start">
               <button
                 type="button"
                 class="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-button hover:bg-button focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-button"
@@ -321,20 +321,39 @@
       ConfirmModal,
     },
     mounted() {
-      this.getMeals();
+      this.getAvailableMeals();
+      this.getBookedMeals();
     },
     methods: {
-      async getMeals() {
+      async getAvailableMeals() {
         try {
-          await this.getMealsData();
+          await this.populateAvailableMealsData();
         } catch (error) {
-          this.showModal = true;
-          this.title = 'Error';
-          this.error = true;
-          this.message = error.message;
+          this.displayErrorModal(error.message);
         }
       },
-      async getMealsData() {
+      async getBookedMeals() {
+        try {
+          await this.populateBookedMealsData();
+        } catch (error) {
+          this.displayErrorModal(error.message);
+        }
+      },
+      async populateBookedMealsData() {
+        // Reset the booked meals data before populating it with fresh data.
+        this.meals.bookedMeals = {};
+
+        const res = await this.$store.dispatch('patient/GET_BOOKED_MEALS');
+        const data = res.data;
+        if (res.status === 400) {
+          this.displayErrorModal(data.message);
+          return;
+        }
+        if (res.status === 200) {
+          this.meals.bookedMeals = data;
+        }
+      },
+      async populateAvailableMealsData() {
         this.meals.further = [];
         this.meals.nearby = [];
         const res = await this.$store.dispatch('patient/GET_AVAILABLE_MEALS');
@@ -343,10 +362,7 @@
           if (data.message === 'JOIN_WAITLIST') {
             this.shouldDisableOrderButtons = true;
           } else {
-            this.showModal = true;
-            this.title = 'Error';
-            this.error = true;
-            this.message = data.message;
+            this.displayErrorModal(data.message);
           }
           return;
         }
@@ -361,17 +377,13 @@
         meals.forEach((meal) => {
           if (meal.quantity) {
             if (isNaN(meal.quantity)) {
-              this.showModal = true;
-              this.title = 'Error';
-              this.error = true;
-              this.message = 'Please enter only numbers for meal slots.';
+              this.displayErrorModal(
+                'Please enter only numbers for meal slots.'
+              );
               return;
             }
             if (meal.quantity < 0) {
-              this.showModal = true;
-              this.title = 'Error';
-              this.error = true;
-              this.message = 'Meal slots cannot be negative.';
+              this.displayErrorModal('Meal slots cannot be negative.');
               return;
             }
             if (meal.quantity > 0) {
@@ -384,10 +396,9 @@
           }
         });
         if (payload.length === 0) {
-          this.showModal = true;
-          this.title = 'Error';
-          this.error = true;
-          this.message = 'Please enter the number of meals you wish to book.';
+          this.displayErrorModal(
+            'Please enter the number of meals you wish to book.'
+          );
           return;
         }
         try {
@@ -396,18 +407,14 @@
           if (res.status === 200) {
             this.title = res.data.message;
             this.error = false;
-            await this.getMealsData();
+            await this.rePopulateMealData();
           } else {
-            this.title = 'Error';
-            this.error = true;
-            this.message =
-              'Error while booking meals. Please refresh the page and try again.';
+            this.displayErrorModal(
+              'Error while booking meals. Please refresh the page and try again.'
+            );
           }
         } catch (error) {
-          this.showModal = true;
-          this.title = 'Error';
-          this.error = true;
-          this.message = error.message;
+          this.displayErrorModal(error.message);
         }
       },
       isNumber(event) {
@@ -431,10 +438,9 @@
       },
       async addToWaitlist(mealsRequested) {
         if (mealsRequested <= 0) {
-          this.showModal = true;
-          this.title = 'Error';
-          this.error = true;
-          this.message = 'Number of meals requested must be greater than 0.';
+          this.displayErrorModal(
+            'Number of meals requested must be greater than 0.'
+          );
           return;
         }
         const payload = { meals_requested: mealsRequested };
@@ -448,20 +454,16 @@
           if (res.status === 200) {
             this.title = 'Successfully joined waitlist!';
           } else {
-            this.title = 'Error';
-            this.error = true;
-            this.message = res.data?.message;
+            this.displayErrorModal(res.data?.message);
           }
         } catch (error) {
-          this.title = 'Error';
-          this.error = true;
-          this.message = error.message;
+          this.displayErrorModal(error.message);
         }
       },
       async cancelMeal() {
         const bookedMeal = this.meals.bookedMeals[this.mealIdToBeCancelled];
         const payload = {
-          cook_id: bookedMeal.cook_id,
+          cook_id: bookedMeal.cook_details.id,
           scheduled_for: bookedMeal.date,
         };
         this.showConfirmModal = false;
@@ -470,33 +472,18 @@
             'patient/CANCEL_MEAL',
             payload
           );
-          this.showModal = true;
           if (res.status === 200) {
+            this.showModal = true;
             this.title = 'Cancelled meal successfully!';
             delete this.meals.bookedMeals[this.mealIdToBeCancelled];
             this.mealIdToBeCancelled = '';
-            await this.$store.commit(
-              'auth/setRecentMeals',
-              this.meals.bookedMeals
-            );
-            await this.getMealsData();
+            await this.rePopulateMealData();
           } else {
-            this.title = 'Error';
-            this.error = true;
-            this.message = res.data?.message;
+            this.displayErrorModal(res.data?.message);
           }
         } catch (error) {
-          this.title = 'Error';
-          this.error = true;
-          this.message = error.message;
+          this.displayErrorModal(error.message);
         }
-      },
-      formatDate(date) {
-        return DateTime.fromISO(date, {
-          zone: 'Asia/Kolkata',
-        })
-          .setLocale('en-US')
-          .toFormat('ccc, LLL dd');
       },
       confirmCancelMeal(id) {
         this.mealIdToBeCancelled = id;
@@ -504,6 +491,22 @@
         this.title = 'Confirm Cancel Meal';
         this.message =
           'This will cancel all meals from the cook for the given date.';
+      },
+      async rePopulateMealData() {
+        await this.populateAvailableMealsData();
+        await this.populateBookedMealsData();
+      },
+      displayErrorModal(message) {
+        this.showModal = true;
+        this.title = 'Error';
+        this.error = true;
+        this.message = message;
+      },
+      formatDate(isoDate) {
+        return DateTime.fromISO(isoDate)
+          .setZone('Asia/Kolkata')
+          .setLocale('en-US')
+          .toFormat('ccc, LLL dd');
       },
     },
   };

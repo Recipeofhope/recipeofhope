@@ -12,9 +12,7 @@ module.exports = {
       validatePatient(patient, invalidUserErrorMessage);
       const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
       if (currentIndianDate.hour >= 20) {
-        throw new Error(
-          'Meals unavailable after 8 PM. Consider joining the waitlist.'
-        );
+        throw new Error('JOIN_WAITLIST');
       }
       let resultMeals = await getMealsForTomorrow();
       if (!resultMeals) {
@@ -120,32 +118,13 @@ module.exports = {
   },
   getBookedMeals: async function(patient, res) {
     try {
-      const invalidUserErrorMessage = 'Only Recipients can book meals.';
-      validatePatient(patient, invalidUserErrorMessage);
+      doGetBookedMealsValidation(patient);
 
-      // Get all meals scheduled for this patient, for today and tomorrow.
-      const todayMidnight = DateTime.fromObject({
-        zone: 'Asia/Kolkata',
-      }).startOf('day');
-      const tomorrowMidnight = todayMidnight.plus({ days: 1 });
-      let bookedMealsQueryResult = await knex
-        .select('cook_id', 'scheduled_for')
-        .count('id')
-        .from('meal')
-        .where('patient_id', patient.id)
-        .andWhere('cancelled', false)
-        .whereBetween('scheduled_for', [todayMidnight, tomorrowMidnight])
-        .groupBy('cook_id', 'scheduled_for');
-      const bookedMeals = await getFormattedBookedMealsResponse(
-        bookedMealsQueryResult
-      );
-      res
-        .status(httpConstants.HTTP_STATUS_OK)
-        .json(Object.fromEntries(bookedMeals));
+      const bookedMeals = await getBookedMealsForTodayTomorrow(patient);
+
+      setSuccessfulResponse(res, Object.fromEntries(bookedMeals));
     } catch (error) {
-      res
-        .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
-        .json({ message: error.message });
+      setErrorResponse(res, error);
     }
   },
 
@@ -221,7 +200,7 @@ module.exports = {
       const mealScheduledFor = reqBody.scheduled_for;
       const mealScheduledForDate = DateTime.fromISO(mealScheduledFor, {
         zone: 'Asia/Kolkata',
-      });
+      }).startOf('day');
 
       // Get all meals, which have the given patients id and the given cook's id.
       const todayMidnight = DateTime.fromObject({
@@ -333,6 +312,43 @@ module.exports = {
     }
   },
 };
+
+function setErrorResponse(res, error) {
+  res
+    .status(httpConstants.HTTP_STATUS_BAD_REQUEST)
+    .json({ message: error.message });
+}
+
+function setSuccessfulResponse(res, responseObj) {
+  res.status(httpConstants.HTTP_STATUS_OK).json(responseObj);
+}
+
+async function getBookedMealsForTodayTomorrow(patient) {
+  const todayMidnight = DateTime.fromObject({
+    zone: 'Asia/Kolkata',
+  }).startOf('day');
+  const tomorrowMidnight = todayMidnight.plus({ days: 1 });
+
+  let bookedMealsQueryResult = await knex
+    .select('cook_id', 'scheduled_for')
+    .count('id')
+    .from('meal')
+    .where('patient_id', patient.id)
+    .andWhere('cancelled', false)
+    .whereBetween('scheduled_for', [todayMidnight, tomorrowMidnight])
+    .groupBy('cook_id', 'scheduled_for')
+    .orderBy('scheduled_for');
+
+  const bookedMeals = await getFormattedBookedMealsResponse(
+    bookedMealsQueryResult
+  );
+  return bookedMeals;
+}
+
+function doGetBookedMealsValidation(patient) {
+  const invalidUserErrorMessage = 'Only Recipients can book meals.';
+  validatePatient(patient, invalidUserErrorMessage);
+}
 
 function validatePatient(patient, message) {
   if (!patient) {
@@ -448,48 +464,46 @@ async function removePatientIdFromMeals(meals, res) {
 }
 
 async function getFormattedBookedMealsResponse(bookedMealsQueryResult) {
-  return await Promise.all(
-    bookedMealsQueryResult.map(async (bookedMeal) => {
-      const formattedBookedMeals = {};
-      const cookDetails = (formattedBookedMeals['cook_details'] = {});
-      cookDetails['id'] = bookedMeal['cook_id'];
+  let formattedBookedMeals = new Map();
+  for (const bookedMeal of bookedMealsQueryResult) {
+    const formattedBookedMeal = {};
+    const cookDetails = (formattedBookedMeal['cook_details'] = {});
+    cookDetails['id'] = bookedMeal['cook_id'];
 
-      // get the cook's name for the given meal.
-      const cookDetailsQueryResult = await knex
-        .select('first_name', 'last_name')
-        .from('user')
-        .where('id', cookDetails['id'])
-        .first();
+    // get the cook's name for the given meal.
+    const cookDetailsQueryResult = await knex
+      .select('first_name', 'last_name')
+      .from('user')
+      .where('id', cookDetails['id'])
+      .first();
 
-      cookDetails['name'] =
-        cookDetailsQueryResult['first_name'] +
-        ' ' +
-        cookDetailsQueryResult['last_name'];
+    cookDetails['name'] =
+      cookDetailsQueryResult['first_name'] +
+      ' ' +
+      cookDetailsQueryResult['last_name'];
 
-      // Get the cook's locality.
-      const { name: localityName } = await knex
-        .select('name')
-        .from('locality')
-        .where('id', function() {
-          return this.select('locality_id')
-            .from('address')
-            .where('user_id', cookDetails['id'])
-            .first();
-        })
-        .first();
+    // Get the cook's locality.
+    const { name: localityName } = await knex
+      .select('name')
+      .from('locality')
+      .where('id', function() {
+        return this.select('locality_id')
+          .from('address')
+          .where('user_id', cookDetails['id'])
+          .first();
+      })
+      .first();
 
-      cookDetails['locality'] = localityName;
+    cookDetails['locality'] = localityName;
 
-      formattedBookedMeals['date'] = DateTime.fromJSDate(
-        bookedMeal['scheduled_for'],
-        {
-          zone: 'Asia/Kolkata',
-        }
-      )
-        .setLocale('en-US')
-        .toFormat('ccc, LLL dd');
-      formattedBookedMeals['count'] = bookedMeal['count'];
-      return [uuidv4(), formattedBookedMeals];
-    })
-  );
+    formattedBookedMeal['date'] = DateTime.fromJSDate(
+      bookedMeal['scheduled_for'],
+      {
+        zone: 'Asia/Kolkata',
+      }
+    );
+    formattedBookedMeal['count'] = bookedMeal['count'];
+    formattedBookedMeals.set(uuidv4(), formattedBookedMeal);
+  }
+  return formattedBookedMeals;
 }

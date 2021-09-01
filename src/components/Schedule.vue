@@ -88,33 +88,25 @@
         error: false,
         title: '',
         message: '',
+        schedule: {},
       };
     },
-    watch: {
-      schedule() {
-        for (const date in this.mealDateToCount) {
-          if (date in this.schedule) {
-            this.mealDateToCount[date] = this.schedule[date].length;
-          }
-        }
-        const date = DateTime.now().setZone('Asia/Kolkata');
-        const today = date.toISODate();
-        const tomorrow = date.plus({ days: 1 }).toISODate();
-        if (today in this.schedule) {
-          this.mealsToday = this.schedule[today].length;
-        }
-        if (tomorrow in this.schedule) {
-          this.mealsTomorrow = this.schedule[tomorrow].length;
-        }
-      },
+    mounted() {
+      this.setupScheduleDetails();
     },
-    props: ['schedule'],
     components: {
       SectionHeading,
       Sch,
       SuccessErrorModal,
     },
     methods: {
+      setupScheduleDetails() {
+        this.setCookSchedule();
+        this.setMealDatesAndCountFromSchedule();
+        this.setTodayAndTomorrowsMealsFromSchedule();
+      },
+      setCookSchedule() {},
+
       async confirmSlots() {
         // Do validation on meal counts.
         for (const date in this.mealDateToCount) {
@@ -178,6 +170,24 @@
         this.showModal = false;
         this.title = '';
         this.message = '';
+      },
+      setMealDatesAndCountFromSchedule() {
+        for (const date in this.mealDateToCount) {
+          if (date in this.schedule) {
+            this.mealDateToCount[date] = this.schedule[date].length;
+          }
+        }
+      },
+      setTodayAndTomorrowsMealsFromSchedule() {
+        const date = DateTime.now().setZone('Asia/Kolkata');
+        const today = date.toISODate();
+        const tomorrow = date.plus({ days: 1 }).toISODate();
+        if (today in this.schedule) {
+          this.mealsToday = this.schedule[today].length;
+        }
+        if (tomorrow in this.schedule) {
+          this.mealsTomorrow = this.schedule[tomorrow].length;
+        }
       },
     },
   };

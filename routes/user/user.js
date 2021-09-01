@@ -323,11 +323,6 @@ async function getUserDetails(user) {
       'user.approved',
       'user.user_type',
       'user.phone_number',
-      'meal.ready AS meal_ready',
-      'meal.scheduled_for AS meal_scheduled_for',
-      'meal.cancelled as meal_cancelled',
-      'meal.patient_id as meal_patient_id',
-      'meal.cook_id as meal_cook_id',
       'address.first_line AS address_first_line',
       'address.second_line AS address_second_line',
       'address.building_name AS address_building_name',
@@ -338,19 +333,6 @@ async function getUserDetails(user) {
       'locality.name AS address_locality'
     )
     .from('user');
-  if (user.user_type === 'Cook') {
-    getDetailsQuery = getDetailsQuery.leftJoin(
-      'meal',
-      'meal.cook_id',
-      'user.id'
-    );
-  } else if (user.user_type === 'Patient') {
-    getDetailsQuery = getDetailsQuery.leftJoin(
-      'meal',
-      'meal.patient_id',
-      'user.id'
-    );
-  }
   const currentIndianDate = DateTime.now().setZone('Asi/Kolkata');
   let date = DateTime.fromObject({ zone: 'Asia/Kolkata' }).startOf('day');
   if (currentIndianDate.hour >= 20) {
@@ -392,98 +374,98 @@ async function getReturnObj(result, date) {
   returnObj.address.state = result[0].address_state;
   returnObj.address.city = result[0].address_city;
   returnObj.address.locality = result[0].address_locality;
-  returnObj.meals = {};
-  returnObj.recent_meals = {};
-  for (const mealObj of result) {
-    // For a cook, for today's/tomorrow's meals, we must only count the meals that have a patient ID assigned, as the meals with no patient IDs are meals that the cook has pledged, but they do not need to cook.
-    if (
-      returnObj.user.user_type === 'Cook' &&
-      (!mealObj.meal_scheduled_for ||
-        (!mealObj.meal_patient_id &&
-          mealObj.meal_scheduled_for.getTime() === date.toMillis()))
-    ) {
-      continue;
-    }
-    const meal = {};
-    meal.meal_ready = mealObj.meal_ready;
-    meal.meal_cancelled = mealObj.meal_cancelled;
-    let meal_scheduled_for = null;
-    if (mealObj.meal_scheduled_for) {
-      meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
-        'en-CA'
-      );
-      if (returnObj.user.user_type === 'Patient') {
-        const today = DateTime.now()
-          .setZone('Asia/Kolkata')
-          .startOf('day');
-        const tomorrow = today.plus({ days: 1 });
-        if (
-          (mealObj.meal_scheduled_for.getTime() === today.toMillis() ||
-            mealObj.meal_scheduled_for.getTime() === tomorrow.toMillis()) &&
-          !mealObj.meal_cancelled
-        ) {
-          if (!(meal_scheduled_for in returnObj.recent_meals)) {
-            returnObj.recent_meals[meal_scheduled_for] = {};
-          }
-          let currentCook;
-          if (
-            !(
-              mealObj.meal_cook_id in returnObj.recent_meals[meal_scheduled_for]
-            )
-          ) {
-            currentCook = returnObj.recent_meals[meal_scheduled_for][
-              mealObj.meal_cook_id
-            ] = {};
-            // get the cooks details.
-            const { first_name, last_name } = await knex
-              .select('first_name', 'last_name')
-              .from('user')
-              .where({ id: mealObj.meal_cook_id })
-              .first();
-            currentCook['cook_name'] = first_name + ' ' + last_name;
-            const { locality_id: cookLocalityId } = await knex
-              .select('locality_id')
-              .from('address')
-              .where({ user_id: mealObj.meal_cook_id })
-              .first();
-            const { name: locality } = await knex
-              .select('name')
-              .from('locality')
-              .where({ id: cookLocalityId })
-              .first();
-            currentCook['locality'] = locality;
-            currentCook['count'] = 0;
-          }
-          currentCook =
-            returnObj.recent_meals[meal_scheduled_for][mealObj.meal_cook_id];
-          currentCook['count']++;
-        }
-      }
-    }
-    if (returnObj.user.user_type === 'Cook') {
-      if (!(meal_scheduled_for in returnObj.meals) && meal_scheduled_for) {
-        returnObj.meals[meal_scheduled_for] = [];
-      }
+  // returnObj.meals = {};
+  // returnObj.recent_meals = {};
+  // for (const mealObj of result) {
+  //   // For a cook, for today's/tomorrow's meals, we must only count the meals that have a patient ID assigned, as the meals with no patient IDs are meals that the cook has pledged, but they do not need to cook.
+  //   if (
+  //     returnObj.user.user_type === 'Cook' &&
+  //     (!mealObj.meal_scheduled_for ||
+  //       (!mealObj.meal_patient_id &&
+  //         mealObj.meal_scheduled_for.getTime() === date.toMillis()))
+  //   ) {
+  //     continue;
+  //   }
+  //   const meal = {};
+  //   meal.meal_ready = mealObj.meal_ready;
+  //   meal.meal_cancelled = mealObj.meal_cancelled;
+  //   let meal_scheduled_for = null;
+  //   if (mealObj.meal_scheduled_for) {
+  //     meal_scheduled_for = mealObj.meal_scheduled_for.toLocaleDateString(
+  //       'en-CA'
+  //     );
+  //     if (returnObj.user.user_type === 'Patient') {
+  //       const today = DateTime.now()
+  //         .setZone('Asia/Kolkata')
+  //         .startOf('day');
+  //       const tomorrow = today.plus({ days: 1 });
+  //       if (
+  //         (mealObj.meal_scheduled_for.getTime() === today.toMillis() ||
+  //           mealObj.meal_scheduled_for.getTime() === tomorrow.toMillis()) &&
+  //         !mealObj.meal_cancelled
+  //       ) {
+  //         if (!(meal_scheduled_for in returnObj.recent_meals)) {
+  //           returnObj.recent_meals[meal_scheduled_for] = {};
+  //         }
+  //         let currentCook;
+  //         if (
+  //           !(
+  //             mealObj.meal_cook_id in returnObj.recent_meals[meal_scheduled_for]
+  //           )
+  //         ) {
+  //           currentCook = returnObj.recent_meals[meal_scheduled_for][
+  //             mealObj.meal_cook_id
+  //           ] = {};
+  //           // get the cooks details.
+  //           const { first_name, last_name } = await knex
+  //             .select('first_name', 'last_name')
+  //             .from('user')
+  //             .where({ id: mealObj.meal_cook_id })
+  //             .first();
+  //           currentCook['cook_name'] = first_name + ' ' + last_name;
+  //           const { locality_id: cookLocalityId } = await knex
+  //             .select('locality_id')
+  //             .from('address')
+  //             .where({ user_id: mealObj.meal_cook_id })
+  //             .first();
+  //           const { name: locality } = await knex
+  //             .select('name')
+  //             .from('locality')
+  //             .where({ id: cookLocalityId })
+  //             .first();
+  //           currentCook['locality'] = locality;
+  //           currentCook['count'] = 0;
+  //         }
+  //         currentCook =
+  //           returnObj.recent_meals[meal_scheduled_for][mealObj.meal_cook_id];
+  //         currentCook['count']++;
+  //       }
+  //     }
+  //   }
+  //   if (returnObj.user.user_type === 'Cook') {
+  //     if (!(meal_scheduled_for in returnObj.meals) && meal_scheduled_for) {
+  //       returnObj.meals[meal_scheduled_for] = [];
+  //     }
 
-      if (meal_scheduled_for) {
-        returnObj.meals[meal_scheduled_for].push({
-          ready: meal.meal_ready,
-          cancelled: meal.meal_cancelled,
-        });
-      }
-    }
-  }
-  // reorder recent meals for the UI.
-  const returnMealsTemp = {};
-  Object.entries(returnObj.recent_meals).forEach(([date, cooks]) => {
-    Object.entries(cooks).forEach(([cook_id, booking_details]) => {
-      returnMealsTemp[uuidv4()] = {
-        cook_id,
-        date,
-        booking_details,
-      };
-    });
-  });
-  returnObj.recent_meals = returnMealsTemp;
+  //     if (meal_scheduled_for) {
+  //       returnObj.meals[meal_scheduled_for].push({
+  //         ready: meal.meal_ready,
+  //         cancelled: meal.meal_cancelled,
+  //       });
+  //     }
+  //   }
+  // }
+  // // reorder recent meals for the UI.
+  // const returnMealsTemp = {};
+  // Object.entries(returnObj.recent_meals).forEach(([date, cooks]) => {
+  //   Object.entries(cooks).forEach(([cook_id, booking_details]) => {
+  //     returnMealsTemp[uuidv4()] = {
+  //       cook_id,
+  //       date,
+  //       booking_details,
+  //     };
+  //   });
+  // });
+  // returnObj.recent_meals = returnMealsTemp;
   return returnObj;
 }

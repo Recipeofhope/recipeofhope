@@ -279,11 +279,19 @@
         :message="message"
       />
       <ConfirmModal
+        v-if="shouldShowMealsRequestedInput"
         v-show="showConfirmModal"
         @CloseModal="closeModal()"
-        @ConfirmListener="
-          shouldShowMealsRequestedInput ? addToWaitlist() : cancelMeal()
-        "
+        @ConfirmListener="addToWaitlist"
+        v-bind:showMealsRequestedInput="shouldShowMealsRequestedInput"
+        :title="title"
+        :message="message"
+      />
+      <ConfirmModal
+        v-if="!shouldShowMealsRequestedInput"
+        v-show="showConfirmModal"
+        @CloseModal="closeModal()"
+        @ConfirmListener="cancelMeal"
         v-bind:showMealsRequestedInput="shouldShowMealsRequestedInput"
         :title="title"
         :message="message"

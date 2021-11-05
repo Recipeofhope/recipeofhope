@@ -9,6 +9,7 @@ const paths = [
   '/user:PUT',
   '/cook/schedule:PUT',
   '/cook/meals-ready:POST',
+  '/cook/meals:GET',
   '/patient/get-meals:GET',
   '/patient/booked-meals:GET',
   '/patient/book-meals:PUT',

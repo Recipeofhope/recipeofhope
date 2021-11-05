@@ -28,5 +28,17 @@ export default {
       );
       return data;
     },
+    async GET_MEALS({ commit, dispatch }) {
+      const data = await asyncMiddleware(
+        async function() {
+          return await cook.getMeals();
+        },
+        commit,
+        dispatch,
+        'GET_MEALS',
+        true
+      );
+      return data;
+    },
   },
 };

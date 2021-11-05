@@ -16,9 +16,7 @@
   import ProfileHeading from '@/components/ProfileHeading.vue';
   import Details from '@/components/Details.vue';
   import Schedule from '@/components/Schedule.vue';
-  import Stats from '@/components/Stats.vue';
-
-  import { isBefore, parseISO } from 'date-fns';
+  // import Stats from '@/components/Stats.vue';
 
   export default {
     data() {

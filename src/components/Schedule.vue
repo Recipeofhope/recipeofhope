@@ -100,13 +100,22 @@
       SuccessErrorModal,
     },
     methods: {
-      setupScheduleDetails() {
-        this.setCookSchedule();
+      async setupScheduleDetails() {
+        await this.setCookSchedule();
         this.setMealDatesAndCountFromSchedule();
         this.setTodayAndTomorrowsMealsFromSchedule();
       },
-      setCookSchedule() {},
-
+      async setCookSchedule() {
+        const res = await this.$store.dispatch('cook/GET_MEALS');
+        const data = res.data;
+        if (res.status === 400) {
+          this.displayErrorModal(data.message);
+          return;
+        }
+        if (res.status === 200) {
+          this.schedule = data;
+        }
+      },
       async confirmSlots() {
         // Do validation on meal counts.
         for (const date in this.mealDateToCount) {
@@ -174,7 +183,7 @@
       setMealDatesAndCountFromSchedule() {
         for (const date in this.mealDateToCount) {
           if (date in this.schedule) {
-            this.mealDateToCount[date] = this.schedule[date].length;
+            this.mealDateToCount[date] = this.schedule[date];
           }
         }
       },
@@ -188,6 +197,12 @@
         if (tomorrow in this.schedule) {
           this.mealsTomorrow = this.schedule[tomorrow].length;
         }
+      },
+      displayErrorModal(message) {
+        this.showModal = true;
+        this.title = 'Error';
+        this.error = true;
+        this.message = message;
       },
     },
   };

@@ -6,4 +6,6 @@ export default {
   updateCookSchedule: (payload) => http.put(`${resource}/schedule`, payload),
 
   markMealsAsReady: (payload) => http.post(`${resource}/meals-ready`, payload),
+
+  getMeals: () => http.get(`${resource}/meals`),
 };

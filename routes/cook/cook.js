@@ -4,21 +4,24 @@ const { DateTime } = require('luxon');
 var cron = require('node-cron');
 
 module.exports = {
+  meals: async function(user, res) {
+    try {
+      await validateCook(user);
+
+      const cookMeals = await getCookMeals(user);
+
+      res.status(200).json(cookMeals);
+    } catch (error) {
+      res.status(400).json({ message: error.message });
+    }
+  },
   scheduleMeals: async function(user, requestBody, res) {
     try {
       if (user.user_type !== 'Cook') {
         throw new Error('Only cooks can schedule meals.');
       }
       // get the user details fresh from the DB.
-      const dbCookUser = await knex('user')
-        .select('approved')
-        .where('id', user.id)
-        .first();
-      if (dbCookUser.approved === false) {
-        throw new Error(
-          'Cook not yet approved. Please contact support or a volunteer'
-        );
-      }
+      await checkIfCookApproved(user);
 
       if (!requestBody || requestBody.length === 0) {
         throw new Error('Missing request body with dates of scheduled meals.');
@@ -165,6 +168,25 @@ module.exports = {
   },
 };
 
+async function validateCook(user) {
+  if (user.user_type !== 'Cook') {
+    throw new Error('Only cooks can call this API.');
+  }
+  await checkIfCookApproved(user);
+}
+
+async function checkIfCookApproved(user) {
+  const dbCookUser = await knex('user')
+    .select('approved')
+    .where('id', user.id)
+    .first();
+  if (dbCookUser.approved === false) {
+    throw new Error(
+      'Cook not yet approved. Please contact support or a volunteer'
+    );
+  }
+}
+
 async function sendCookWhatsapp(decodedUser, allPatientDetails) {
   let patientStr = '',
     i = 1;
@@ -304,4 +326,72 @@ async function sendCookWhatsappForTomorrowsMeals(cook) {
       to: 'whatsapp:+91' + cook.phone_number,
     })
     .then((message) => console.log(message.sid));
+}
+async function getCookMeals(user) {
+  const cookMealsQuery = getCookMealsQuery(user);
+
+  const result = await cookMealsQuery;
+
+  const filteredCookMeals = getFilteredCookMeals(result);
+
+  const formattedCookMeals = getFormattedCookMeals(filteredCookMeals);
+
+  return formattedCookMeals;
+}
+function getCookMealsQuery(user) {
+  var { startDate, endDate } = getStartAndEndDateForGetCookMealsQuery();
+
+  const query = knex('meal')
+    .whereBetween('scheduled_for', [startDate, endDate])
+    .andWhere('cook_id', user.id);
+
+  return query;
+}
+
+function getStartAndEndDateForGetCookMealsQuery() {
+  var startDate, endDate;
+  const currentIndianDate = DateTime.now().setZone('Asia/Kolkata');
+
+  if (currentIndianDate.hour < 20) {
+    startDate = currentIndianDate.startOf('day');
+    endDate = startDate.plus({ days: 7 });
+  } else {
+    startDate = currentIndianDate.startOf('day').plus({ days: 1 });
+    endDate = startDate.plus({ days: 6 });
+  }
+
+  return { startDate, endDate };
+}
+
+function getFilteredCookMeals(result) {
+  return result.filter((meal) => {
+    const today = DateTime.now()
+      .setZone('Asia/Kolkata')
+      .startOf('day');
+    const tomorrow = today.plus({ days: 1 });
+    if (
+      meal.scheduled_for.getTime() === today.toMillis() ||
+      (meal.scheduled_for.getTime() === tomorrow.toMillis() && today.hour >= 20)
+    ) {
+      return meal.patient_id !== null && meal.patient_id !== '';
+    } else {
+      return true;
+    }
+  });
+}
+
+function getFormattedCookMeals(filteredCookMeals) {
+  const dateToCount = {};
+  filteredCookMeals.map((meal) => {
+    const date = DateTime.fromMillis(meal.scheduled_for.getTime())
+      .setZone('Asia/Kolkata')
+      .toISODate();
+    if (date in dateToCount) {
+      dateToCount[date]++;
+    } else {
+      dateToCount[date] = 1;
+    }
+  });
+
+  return dateToCount;
 }
